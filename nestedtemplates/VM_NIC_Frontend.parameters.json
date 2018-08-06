@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "value": "akh-nic2"
+    },
+    "PublicIP_Name": {
+      "value": "akh-nic2-pip"
+    },
+    "PublicIP_DNS_Name": {
+      "value": "akhnic2pip"
+    },
+    "VNET_Name": {
+      "value": "AKH-DEV-NEU-VNET"
+    },
+    "VNET_ResourceGroupName": {
+      "value": "AKH-DEV-NEU-NTWRK-RG"
+    },
+    "VNET_Subnet_Name": {
+      "value": "BI_DEV_NEU_Subnet"
+    },
+    "VNET_Subnet_FirstSecondThirdOctet_IPAddress": {
+      "value": "10.10.3"
+    },
+    "NIC_AttachedTo_LoadBalancer": {
+      "value": "False"
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-04-17\u0026ss=bfqt\u0026srt=sco\u0026sp=rwdlacup\u0026se=2017-12-04T00:06:09Z\u0026st=2017-12-03T04:06:09Z\u0026spr=https\u0026sig=PdaE2l04DjPTFFeV9dI8fe9Hg4ok4wAhfPj3409iDM4%3D"
+    },
+    "NIC_IPAddress_AllocationMethod": {
+      "value": "Dynamic"
+    },
+    "NIC_AppGW_BackendAddressPool_ID": {
+      "value": "/subscriptions/fcebdb0c-44cf-4d89-8248-e9acdbafd358/resourceGroups/lsh/providers/Microsoft.Network/applicationGateways/XXX-ZZZ-SQL-AppGW/backendAddressPools/appGatewayBackendPool"
+    },
+    "VM_LB_Type": {
+      "value": "External"
+    },
+    "VNET_FourthOctet_IPAddress_Counter": {
+      "value": 35
+    },
+    "NIC_With_CustomDNS": {
+      "value": "True"
+    }
+    
+  }
+}

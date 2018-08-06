@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "value": "akh-nic1"
+    },
+    "VNET_Name": {
+      "value": "AKH-DEV-NEU-VNET"
+    },
+    "VNET_ResourceGroupName": {
+      "value": "AKH-DEV-NEU-NTWRK-RG"
+    },
+    "VNET_Subnet_Name": {
+      "value": "Web_DEV_NEU_Subnet"
+    },
+    "VNET_Subnet_FirstSecondThirdOctet_IPAddress": {
+      "value": "10.10.5"
+    },
+    "VNET_FourthOctet_IPAddress_Counter": {
+      "value": 10
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-04-17\u0026ss=bfqt\u0026srt=sco\u0026sp=rwdlacup\u0026se=2017-12-03T23:28:17Z\u0026st=2017-12-03T03:28:17Z\u0026spr=https\u0026sig=ZDOd7cSM3TTh0D95OVYydU9rfCNPEq1z3IteJuoM4M0%3D"
+    },
+    "NIC_IPAddress_AllocationMethod": {
+      "value": "Dynamic"
+    },
+    "NIC_With_CustomDNS": {
+      "value": "True"
+    }
+
+  }
+}

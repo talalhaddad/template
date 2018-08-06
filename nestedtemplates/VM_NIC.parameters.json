@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "value": "vmNIC"
+    },
+    "VNET_Name": {
+      "value": "AKH-PRD-WEU-VNET"
+    },
+    "VNET_ResourceGroupName": {
+      "value": "AKH-NETWORK"
+    },
+    "VNET_Subnet_Name": {
+      "value": "BI_PRD_WEU_Subnet"
+    },
+    "VNET_Subnet_FirstSecondThirdOctet_IPAddress": {
+      "value": "172.10.3"
+    },
+    "NIC_AttachedTo_PublicIP": {
+      "value": "True"
+    },
+    "VNET_FourthOctet_IPAddress_Counter": {
+      "value": 10
+    },
+   
+    "NIC_LB_BackendAddressPool_ID": {
+      "value": "/subscriptions/fcebdb0c-44cf-4d89-8248-e9acdbafd358/resourceGroups/lshTemplate-VirtualMachine/providers/Microsoft.Network/networkInterfaces/backend"
+    },
+    "NIC_AttachedTo_LoadBalancer": {
+      "value": "False"
+    },
+    "NIC_PublicIP_ID": {
+      "value": "/subscriptions/fcebdb0c-44cf-4d89-8248-e9acdbafd358/resourceGroups/lshTemplate-VirtualMachine/providers/Microsoft.Network/publicIPAddresses/frontendPIP"
+    }}
+}

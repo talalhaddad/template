@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NSG_Name": {
+      "type": "string"
+    },
+    "ILB_Port_RuleName": {
+      "type": "string",
+      "defaultValue": "SQL_Port"
+    },
+    "ILB_Port_Rule_Priority": {
+      "type": "int",
+      "defaultValue": 120
+    },
+    "ILB_Port_DestinationPortRange": {
+      "type": "int",
+      "defaultValue":1433
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "name": "[concat(parameters('NSG_Name'),'/',parameters('ILB_Port_RuleName'))]",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "[parameters('ILB_Port_DestinationPortRange')]",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": "[parameters('ILB_Port_Rule_Priority')]",
+        "direction": "Inbound"
+      },
+      "resources": [],
+      "dependsOn": []
+
+    }
+  ],
+  "outputs": {}
+}

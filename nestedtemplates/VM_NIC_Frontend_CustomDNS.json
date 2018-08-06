@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Network Interface"
+      }
+    },
+    "NIC_DNS_IP": {
+      "type": "array",
+      "defaultValue": [
+        "10.200.4.4",
+        "10.200.4.5"
+      ],
+      "metadata": {
+        "description": "Specify the DNS Servers that the VM will use. This is an array, data is provided between quotes and comma seperated"
+      }
+    },
+    "NIC_Settings": {
+      "type": "object"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('NIC_Name')]",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": { "displayName": "Network Interface" },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": "[parameters('NIC_Settings')]"
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": "[parameters('NIC_DNS_IP')]"
+        },
+        "enableIPForwarding": false
+      },
+      "resources": [],
+      "dependsOn": []
+    }
+  ],
+  "outputs": {}
+}

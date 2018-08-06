@@ -1,0 +1,94 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+
+    "VM_Name": {
+      "type": "string"
+    },
+
+    "VM_Windows_CustomScript_Extension_File": {
+      "type": "string"
+    },
+
+    "VM_AdminUsername": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Admin username"
+      }
+    },
+    "VM_AdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "Templates_StorageAccount": {
+      "type": "string",
+      "defaultValue": "https://rndsharedfiles",
+      "metadata": {
+
+        "description": "Storage Account name that contains the custom script file"
+      }
+
+
+      },
+
+    "Templates_FileStorageContainer": {
+      "type": "string",
+      "defaultValue": "ebecsdev2customscripts",
+      "metadata": {
+
+        "description": "Storage Container name that contains the custom script file"
+      }
+      }
+
+
+
+    },
+
+  "variables": {},
+
+
+  "resources": [
+    /* {
+
+
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('VM_Name'), '/CustomScript')]",
+      "location": "[resourceGroup().location]",
+
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.9",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+             "[concat(parameters('Templates_StorageAccount'), '.blob.core.windows.net', '/', parameters('Templates_FileStorageContainer'), '/', parameters('VM_Windows_CustomScript_Extension_File'))]"
+            // "https://rndsharedfiles.blob.core.windows.net/ebecsdev2customscripts/gp.ps1"
+          ]
+        },
+        "protectedSettings": {
+         "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File gp.ps1 -user ',parameters('VM_AdminUsername'),' -password ',parameters('VM_AdminPassword'),'.core.windows.net')]",
+         "storageAccountName": "rndsharedfiles",
+          "storageAccountKey": "0t7SBfLRivNaT7xHP+k+5LYmDBOMjDMr+0LB5N615uIuxq7zILNivl6EVogZmSE1tutyo35IzkyD+9PZ+T10OQ=="
+        }
+
+      }
+    } */
+  ],
+  "outputs": {
+       "URI": {
+
+      "type": "string",
+      "value":"[concat(parameters('Templates_StorageAccount'), '.blob.core.windows.net', '/', parameters('Templates_FileStorageContainer'), '/', parameters('VM_Windows_CustomScript_Extension_File'))]"
+
+
+
+    } 
+  }
+}
+

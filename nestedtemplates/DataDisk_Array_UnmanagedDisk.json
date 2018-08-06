@@ -1,0 +1,242 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_NumberOfDataDisks": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 20
+    },
+    "VM_DataDiskSizeGB": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 4096
+    },
+    "VM_DataDisk_Caching": {
+      "type": "string",
+      "defaultValue": "None",
+      "allowedValues": [
+        "None",
+        "ReadOnly",
+        "ReadWrite"
+      ]
+    },
+    "VM_DataDisk_StorageAccount_Name": {
+      "type": "string"
+    },
+    "VM_Name": {
+      "type": "string"
+    }
+  },
+    "variables": {
+        "DataDisk_Array_UnmanagedDisk": [
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-01')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 0,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-01.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-02')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 1,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-02.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-03')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 2,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-03.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-04')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 3,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-04.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-05')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 4,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-05.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-06')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 5,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-06.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-07')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 6,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-07.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-08')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 7,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-08.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-09')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 8,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-09.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-10')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 9,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-10.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-11')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 10,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-11.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-12')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 11,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-12.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-13')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 12,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-13.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-14')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 13,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-14.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-15')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 14,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-15.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-16')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 15,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-16.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-17')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 16,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-17.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-18')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 17,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-18.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-19')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 18,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-19.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-20')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 19,
+            "vhd": {
+              "uri": "[concat('http://', tolower(parameters('VM_DataDisk_StorageAccount_Name')), '.blob.core.windows.net','/datadisks/',parameters('VM_Name'),'-DataDisk-20.vhd')]"
+            },
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Empty"
+          }
+        ]
+    },
+    "resources": [],
+    "outputs": {
+      "DataDisk_Array": {
+        "type": "array",
+        "value": "[take(variables('DataDisk_Array_UnmanagedDisk'),parameters('VM_NumberOfDataDisks'))]"
+      }
+    }
+}

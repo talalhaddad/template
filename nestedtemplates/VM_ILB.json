@@ -1,0 +1,394 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Customer_ShortName": {
+      "type": "string",
+      "defaultValue": "XXX",
+      "minLength": 3,
+      "maxLength": 3,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Customer Name means the short name of the customer, such as 'EBC' for eBECS"
+      }
+    },
+    "Environment_ShortName": {
+      "type": "string",
+      "defaultValue": "ZZZ",
+      "minLength": 3,
+      "maxLength": 3,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Environment means the type of environment you are trying to deploy, 'DEV' means development, 'PRD' means production"
+      }
+    },
+    "Location_ShortName": {
+      "type": "string",
+      "defaultValue": "WEU",
+      "allowedValues": [
+        "UKS",
+        "UKN",
+        "WEU",
+        "NEU",
+        "EUS",
+        "WUS",
+        "NUS",
+        "SUS",
+        "CUS",
+        "CAE",
+        "CAC",
+        "EAA",
+        "SEA"
+      ],
+      "minLength": 3,
+      "maxLength": 3,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Location means the region you are trying to deploy into, 'EUW' means Europe West, 'EUN' means Europe North"
+      }
+    },
+    "Functionality_ShortName": {
+      "type": "string",
+      "defaultValue": "AAA",
+      "minLength": 2,
+      "maxLength": 4,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Functionality Name means the short name of the LB function, such as 'SQL', 'APP', 'AOS', 'EP', 'CRM', 'NAV'."
+      }
+    },
+    "VNET_Name": {
+      "type": "string",
+      "defaultValue": "CUS-ENV-LOC-VNET",
+      "metadata": {
+        "description": "This parameter is needed if you are not deploying a VNET in this deployment. Even if you are, you could specify its name to overwrite the default CUS-ENV-LOC-VNET"
+      }
+    },
+    "VNET_ResourceGroupName": {
+      "type": "string",
+      "defaultValue": "CUS-ENV-LOC-NTWRK-RG",
+      "metadata": {
+        "description": "The name of the resource group containing the VNET, this parameter is required when selecting 'False for VNET in Same Resource Group, indicating the VNET is in another Resource Group. If a new VNET and RG VNET is created, the name of RG should be CUS-ENV-LOC-NTWRK-RG"
+      }
+    },
+    "VNET_Subnet_Name": {
+      "type": "string",
+      "defaultValue": "AAA",
+      "minLength": 1,
+      "metadata": {
+        "description": "The Subnet Name that the ILB will be connecting to"
+      }
+    },
+    "VNET_Subnet_NSG_Name": {
+      "type": "string",
+      "defaultValue": "AAA",
+      "minLength": 1,
+      "metadata": {
+        "description": "The Subnet Name that the ILB will be connecting to"
+      }
+    },
+    "VNET_Subnet_FirstSecondThirdOctet": {
+      "type": "string",
+      "defaultValue": "AAA",
+      "minLength": 5,
+      "maxLength": 11,
+      "metadata": {
+        "description": "The IP Address of the Subnet excluding the last octet. eg. '192.168.1'"
+      }
+    },
+    "LoadBalancer_IP_Counter": {
+      "type": "int",
+      "defaultValue": 50,
+      "minValue": 50,
+      "maxValue": 59,
+      "metadata": {
+        "description": "The IP Counter that creates the last octet from the IP Address"
+      }
+    },
+    "LoadBalancingRules_EnableFloatingIP": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Enable Floating IP On LB Rules"
+      }
+    },
+    "Include_LoadBalancingRules": {
+      "type": "string",
+      "defaultValue": "NotSupported-AlwaysTrue",
+      "allowedValues": [
+        "NotSupported-AlwaysTrue",
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array"
+      }
+    },
+    "LoadBalancingRules_Names": {
+      "type": "array",
+      "defaultValue": [
+        "SQL-Rule",
+        "AX-Rule",
+        "VS-Rule"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array"
+      }
+    },
+    "LoadBalancingRules_Ports": {
+      "type": "array",
+      "defaultValue": [
+        1433,
+        2712,
+        1123
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it."
+      }
+    },
+    "Include_InboundNAT_Rules": {
+      "type": "string",
+      "defaultValue": "False",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array"
+      }
+    },
+    "InboundNAT_Rules_EnableFloatingIP": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Enable Floating IP On NAT Rules"
+      }
+    },
+    "Inbound_NAT_Rules_Names": {
+      "type": "array",
+      "defaultValue": [
+        "VM1-RDP",
+        "VM2-RDP",
+        "VM3-RDP"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array"
+      }
+    },
+    "InboundNAT_Rules_Backend_Port": {
+      "type": "int",
+      "defaultValue": 3389,
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it."
+      }
+    },
+    "InboundNAT_Rules_Frontend_Ports": {
+      "type": "array",
+      "defaultValue": [
+        3389,
+        3390,
+        3391
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it."
+      }
+    },
+    "Update_Subnet_NSG_Rules": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "This parameter determines whether the NSG settings should be updated to open Load Balancer Ports, only use this if an NSG exists for the subnet"
+      }
+    },
+    "Subnet_NSG_Rules_Counter": {
+      "type": "int",
+      "defaultValue": 125,
+      "minValue": 125,
+      "metadata": {
+        "description": "The priority counter for the NSG Update. Be sure to select un-used priorities. Minimum priority is 125"
+      }
+    },
+    "Deployment_SAS_Token": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    "ILB_Name": "[concat(parameters('Customer_ShortName'), '-', parameters('Environment_ShortName'),'-', parameters('Functionality_ShortName'),'-', 'ILB')]",
+    "ILB_FrontEndIP_Name": "[concat(variables('ILB_Name'),'-FrontendIP')]",
+    "ILB_BackendAddressPool_Name": "[concat(variables('ILB_Name'),'-pool')]",
+    "ILB_Probe_Name": "[concat(variables('ILB_Name'),'-probe')]",
+
+    //Load Balancing Rules Template Settings
+    "Templates_StorageAccount": "https://rndsharedfiles.blob.core.windows.net",
+    "Templates_StorageContainer": "ebecsdev2templates",
+    "Template_LB_LoadBalancingRules_Settings_JSON": "LB_LoadBalancingRules_Settings.json",
+    "Template_ILB_NSG_Settings_JSON": "NSG_ILB_Settings.json"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('ILB_Name')]",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": { "displayName": "Internal Load Balancer" },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('ILB_FrontEndIP_Name')]",
+            "properties": {
+              "privateIPAddress": "[concat(parameters('VNET_Subnet_FirstSecondThirdOctet'),'.',parameters('LoadBalancer_IP_Counter'))]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')),'/subnets/',parameters('VNET_Subnet_Name'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('ILB_BackendAddressPool_Name')]"
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('ILB_Probe_Name')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ],
+        "copy": [
+          {
+            "name": "loadBalancingRules",
+            "count": "[length(parameters('LoadBalancingRules_Names'))]",
+            "input": {
+              "name": "[parameters('LoadBalancingRules_Names')[copyIndex('loadBalancingRules')]]",
+              "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/frontendIpConfigurations/',variables('ILB_FrontEndIP_Name'))]"
+                },
+                "frontendPort": "[parameters('LoadBalancingRules_Ports')[copyIndex('loadBalancingRules')]]",
+                "backendPort": "[parameters('LoadBalancingRules_Ports')[copyIndex('loadBalancingRules')]]",
+                "enableFloatingIP": "[parameters('LoadBalancingRules_EnableFloatingIP')]",
+                "idleTimeoutInMinutes": 4,
+                "protocol": "Tcp",
+                "loadDistribution": "Default",
+                "backendAddressPool": {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/backendAddressPools/',variables('ILB_BackendAddressPool_Name'))]"
+                },
+                "probe": {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/probes/',variables('ILB_Probe_Name'))]"
+                }
+              }
+            }
+          }
+        ],
+        "inboundNatRules": [],
+        "outboundNatRules": [],
+        "inboundNatPools": []
+      },
+      "resources": [
+
+      ],
+      "dependsOn": [
+      ]
+    },
+    {
+      "condition": "[equals(parameters('Include_LoadBalancingRules'),'NotSupported')]",
+      "name": "[concat(variables('ILB_Name'),'/',parameters('LoadBalancingRules_Names')[copyIndex(0)])]",
+      "type": "Microsoft.Network/loadBalancers/loadBalancingRules",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers',variables('ILB_Name'))]"
+      ],
+      "copy": {
+        "name": "LoadBalancingRulesCounter",
+        "count": "[length(parameters('LoadBalancingRules_Names'))]"
+      },
+      "properties": {
+        "frontendIPConfiguration": {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/frontendIpConfigurations/',variables('ILB_FrontEndIP_Name'))]"
+        },
+        "frontendPort": "[parameters('LoadBalancingRules_Ports')[copyIndex(0)]]",
+        "backendPort": "[parameters('LoadBalancingRules_Ports')[copyIndex(0)]]",
+        "enableFloatingIP": false,
+        "idleTimeoutInMinutes": 4,
+        "protocol": "Tcp",
+        "loadDistribution": "Default",
+        "backendAddressPool": {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/backendAddressPools/',variables('ILB_BackendAddressPool_Name'))]"
+        },
+        "probe": {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/probes/',variables('ILB_Probe_Name'))]"
+        }
+      }
+    },
+    {
+      "condition": "[equals(parameters('Include_InboundNAT_Rules'),'True')]",
+      "name": "[concat(variables('ILB_Name'),'/',parameters('Inbound_NAT_Rules_Names')[copyIndex(0)])]",
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers',variables('ILB_Name'))]"
+      ],
+      "copy": {
+        "name": "InboundNATRulesCounter",
+        "count": "[length(parameters('Inbound_NAT_Rules_Names'))]"
+      },
+      "properties": {
+        "frontendIPConfiguration": {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/frontendIpConfigurations/',variables('ILB_FrontEndIP_Name'))]"
+        },
+        "frontendPort": "[parameters('InboundNAT_Rules_Frontend_Ports')[copyIndex(0)]]",
+        "backendPort": "[parameters('InboundNAT_Rules_Backend_Port')]",
+        "enableFloatingIP": "[parameters('InboundNAT_Rules_EnableFloatingIP')]",
+        "protocol": "Tcp"
+      }
+    },
+    {
+      "condition": "[equals(parameters('Update_Subnet_NSG_Rules'),'True')]",
+      "name": "[concat('NSG_ILB_Settings',parameters('LoadBalancingRules_Names')[copyIndex(0)])]",
+      "type": "Microsoft.Resources/deployments",
+      "ResourceGroup": "[parameters('VNET_ResourceGroupName')]",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "NSG_UpdateCounter",
+        "count": "[length(parameters('LoadBalancingRules_Ports'))]"
+      },
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_ILB_NSG_Settings_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NSG_Name": { "value": "[parameters('VNET_Subnet_NSG_Name')]" },
+          "ILB_Port_RuleName": { "value": "[concat(variables('ILB_Name'),'_',parameters('LoadBalancingRules_Names')[copyindex(0)])]" },
+          "ILB_Port_Rule_Priority": { "value": "[add(parameters('Subnet_NSG_Rules_Counter'),copyIndex(0))]" },
+          "ILB_Port_DestinationPortRange": { "value": "[parameters('LoadBalancingRules_Ports')[copyindex(0)]]" }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "LB_BackendAddressPoolID": {
+      "type": "string",
+      "value": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('ILB_Name')), '/backendAddressPools/',variables('ILB_BackendAddressPool_Name'))]"
+    }
+  }
+}

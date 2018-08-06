@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "layan"
+    },
+    "VM_Windows_CustomScript_Extension_File": {
+      "value": "gp.ps1"
+    },
+    "VM_AdminUsername": {
+      "value": "layan"
+    },
+    "VM_AdminPassword": {
+      "value": "Layan1234!@#$"
+    },
+    "Templates_StorageAccount": {
+      "value": "https://rndsharedfiles"
+    }
+   
+  }
+}

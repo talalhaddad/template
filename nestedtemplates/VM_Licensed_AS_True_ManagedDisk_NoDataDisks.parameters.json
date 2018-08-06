@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "trueNodata"
+    },
+    "VM_Diag_StorageAccount_Name": {
+      "value": "akhdevxyydiag"
+    },
+    "VM_AdminUsername": {
+      "value": "layan"
+    },
+    "VM_AdminPassword": {
+      "value": "Layan1234!@#$"
+    },
+
+    "VM_AS_Name": {
+      "value": ""
+
+    }
+  }
+}

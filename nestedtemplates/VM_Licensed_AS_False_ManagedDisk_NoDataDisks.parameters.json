@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    
+      "VM_Name": {
+      "value": ""  
+        },
+
+    "VM_Size": {
+      "value": ""
+    },
+    "VM_Diag_StorageAccount_Name": {
+      "value": ""
+    },
+
+    "VM_ImageReference": {
+      "value": ""
+    },
+
+    "VM_AdminUsername": {
+      "value": ""
+    },
+    "VM_AdminPassword": {
+      "value": ""
+    },
+    "VM_OS_Type": {
+      "value": ""
+    },
+    "VM_OSDisk_Account_Type": {
+      "value": ""
+    },
+    "VM_LoadBalanced": {
+      "value": ""
+    },
+
+    "VM_NIC_Type": {
+      "value": ""
+    }
+    }
+  
+}

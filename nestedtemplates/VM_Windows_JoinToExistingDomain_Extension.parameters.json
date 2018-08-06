@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "akh-TRI-TRI1-06"
+    },
+    "VM_DomainJoin_DomainName": {
+      "value": "ebecsrnd.com"
+    },
+    "VM_DomainJoin_OU_Path": {
+      "value": "OU=Domain Controllers; DC=ebecsrnd; DC=COM"
+    },
+    "VM_DomainJoin_DomainAdmin_UserName": {
+      "value": "ahmad@ebecsrnd.com"
+    },
+    "VM_DomainJoin_DomainAdmin_Password": {
+      "value": "optra123qwe!"
+    }}
+}

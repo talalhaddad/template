@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "AKH-DEV-AHMA-1"
+    },
+    "VM_Windows_CustomScript_Extension_File": {
+      "value": "gp.ps1"
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-04-17\u0026ss=b\u0026srt=o\u0026sp=r\u0026se=2017-09-30T19:31:11Z\u0026st=2017-09-17T05:31:11Z\u0026spr=https\u0026sig=QQtS02m7u1NGrrC2%2FAfGVuwsmPfMh1SNHAwaClEP7D4%3D"
+    }}
+}

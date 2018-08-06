@@ -1,0 +1,571 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 15,
+      "metadata": {
+        "description": "The name of the virtual machine, must be less than 15 characters"
+      }
+    },
+    "VM_OS_Type": {
+      "type": "string",
+      "defaultValue": "Windows",
+      "allowedValues": [
+        "Windows",
+        "Linux"
+      ]
+    },
+    "VM_OperatingSystem": {
+      "type": "string",
+      "defaultValue": "Windows Server 2016",
+  /*    "allowedValues": [
+        "Custom Image",
+        "Windows Server 2016",
+        "Windows Server 2012 R2",
+        "SUSE Linux Enterprise 12 SP3",
+        "RedHat Enterprise Linux 7.4",
+        "Oracle Linux Enterprise 7.4",
+        "Managed_Password_Pro"
+
+      ],*/
+      "metadata": {
+        "description": "The type of the operating system on the virtual machine set."
+      }
+    },
+    "VM_OS_Windows_License": {
+      "type": "string",
+      "defaultValue": "Licensed",
+      "allowedValues": [
+        "Licensed",
+        "BYOL"
+      ],
+      "metadata": {
+        "description": "If Windows Server is selected, select whether you're using the Hybrid Cloud Benefit for using your own license"
+      }
+    },
+    "VM_Size": {
+      "type": "string",
+      "defaultValue": "Standard_E2s_v3",
+      "allowedValues": [
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_E2s_v3",
+        "Standard_E4s_v3",
+        "Standard_E8s_v3",
+        "Standard_E16s_v3",
+        "Standard_E32s_v3",
+        "Standard_E64s_v3",
+        "Standard_DS1_v2",
+        "Standard_DS2_v2", /* Size of the Virtual Machine */
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_DS6_v2",
+        "Standard_DS7_v2",
+        "Standard_DS8_v2",
+        "Standard_DS9_v2",
+        "Standard_DS10_v2",
+        "Standard_DS11_v2",
+        "Standard_DS12_v2",
+        "Standard_DS13_v2",
+        "Standard_DS14_v2"
+      ]
+    },
+    "VM_AdminUsername": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 20,
+      "metadata": {
+        "description": "The name of the admin on virtual machine"
+      }
+    },
+    "VM_AdminPassword": {
+      "type": "securestring"
+    },
+    "VM_WithAvailablitySet": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the Virtual Machine will be contained in an availability Set, if 'True', then an AS will be created for the VM Functionality."
+      }
+    },
+    "VM_AvailabilitySet_Name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 20,
+      "metadata": {
+        "description": "The name of the availablity set"
+      }
+    },
+    "VM_DisksType": {
+      "defaultValue": "ManagedDisk",
+      "type": "string",
+      "allowedValues": [
+        "ManagedDisk",
+        "UnmanagedDisk"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM set will use Managed Disks or Unmanaged Disks. Managed Disks act as their own resource while unmanaged disks are stored in storage accounts."
+      }
+    },
+    "VM_OSDisk_Type": {
+      "defaultValue": "Standard",
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM OS Disk will be Standard or Premium. "
+      }
+    },
+    "VM_UnmanagedDisk_OSDisk_StorageAccount_Name": {
+      "type": "string",
+      "defaultValue": "ebecsstorageaccount",
+      "minLength": 5,
+      "maxLength": 34,
+      "metadata": {
+        "description": "The name of the VM OS Storage Account"
+      }
+    },
+    "VM_Include_DataDisks": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM contains Data Disks or not. "
+      }
+    },
+    "VM_DataDisk_Type": {
+      "defaultValue": "Standard",
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM Data Disks will be Standard or Premium. "
+      }
+    },
+    "VM_UnmanagedDisk_DataDisk_StorageAccount_Name": {
+      "type": "string",
+      "defaultValue": "ebecsstorageaccount",
+      "minLength": 5,
+      "maxLength": 34,
+      "metadata": {
+        "description": "The name of the VM Data Disk Storage Account"
+      }
+    },
+    "VM_DataDisk_Array": {
+      "type": "array",
+      "metadata": {
+        "description": "The Data Disk Array containing the data disk configuration"
+      },
+      "defaultValue": [
+        {
+          "name": "[concat(parameters('VM_Name'), '-DataDisk-01')]",
+          "diskSizeGB": 2,
+          "lun": 0,
+          "caching": "None",
+          "createOption": "Attach",
+          "managedDisk": {
+            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-01'))]"
+          }
+        }
+      ]
+    },
+    "VM_Diagnostics_Enabled": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM has diagnostics enabled or disabled"
+      }
+    },
+    "VM_Diag_StorageAccount_Name": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 34,
+      "metadata": {
+        "description": "The name of the VM OS Storage Account"
+      }
+    },
+    "VM_AzureImage_ImageReference": {
+      "type": "object",
+      "defaultValue": {
+        "sku": "2012-R2-Datacenter",
+        "offer": "WindowsServer",
+        "publisher": "MicrosoftWindowsServer",
+        "version": "latest"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name": {
+      "type": "string",
+      "defaultValue": "ebecsstorageaccount",
+      "minLength": 5,
+      "maxLength": 34,
+      "metadata": {
+        "description": "Specify the name of the storage account where the source image resides"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Container_Name": {
+      "type": "string",
+      "defaultValue": "images",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the container in the storage account where the source image resides"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Image_Name": {
+      "type": "string",
+      "defaultValue": "testimage.vhd",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the image name in the container"
+      }
+    },
+    "VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name": {
+      "type": "string",
+      "defaultValue": "ResourceGroupA",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the resource group that contains the Image VHD Resource"
+      }
+    },
+    "VM_CustomImage_ManagedDisk_Source_Image_Name": {
+      "type": "string",
+      "defaultValue": "DaaS-Image",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name Image Resource. The template automatically constructs the template resource ID"
+      }
+    },
+    "VM_Dual_NICs": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM has two NICs or a Single NIC"
+      }
+    },
+    
+    "Deployment_SAS_Token": {
+      "type": "securestring"
+    }
+
+  },
+
+  "variables": {
+
+    //OS Profile Object
+    "VM_osProfile": {
+      "computerName": "[parameters('VM_Name')]",
+      "adminUsername": "[parameters('VM_AdminUsername')]",
+      "adminPassword": "[parameters('VM_AdminPassword')]"
+    },
+
+    "VM_osProfile_Windows": {
+      "computerName": "[parameters('VM_Name')]",
+      "adminUsername": "[parameters('VM_AdminUsername')]",
+      "adminPassword": "[parameters('VM_AdminPassword')]",
+      "windowsConfiguration": {
+        "provisionVMAgent": true,
+        "enableAutomaticUpdates": true
+      }
+    },
+
+    "VM_osProfile_Assesment": "[if(equals(parameters('VM_OS_Type'), 'Windows'), variables('VM_osProfile_Windows'), variables('VM_osProfile'))]",
+
+    // Diagnostics Profile Object
+    "VM_diagnosticsProfile_Enabled": {
+      "bootDiagnostics": {
+        "enabled": true,
+        "storageUri": "[concat('https://',parameters('VM_Diag_StorageAccount_Name'),'.blob.core.windows.net/')]"
+      }
+    },
+
+    "VM_diagnosticsProfile_Disabled": {
+    },
+
+    "VM_diagnosticsProfile_Selection": "[if(equals(parameters('VM_Diagnostics_Enabled'),'True'),variables('VM_diagnosticsProfile_Enabled'),variables('VM_diagnosticsProfile_Disabled'))]",
+
+    // Network Profile Object
+
+    // Single NIC
+
+    "VM_networkProfile_Single": {
+      "networkInterfaces": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', concat(parameters('VM_Name'),'-NIC-01')))]",
+          "properties": { "primary": true }
+        }
+      ]
+    },
+
+    // Dual NIC
+
+    "VM_networkProfile_Dual": {
+      "networkInterfaces": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', concat(parameters('VM_Name'),'-NIC-01')))]",
+          "properties": { "primary": true }
+        },
+        {
+          "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', concat(parameters('VM_Name'),'-NIC-02')))]",
+          "properties": { "primary": false }
+        }
+      ]
+    },
+
+    /// Network Profile Single / Dual Selection Point
+    "VM_networkProfile_Selection": "[if(equals(parameters('VM_Dual_NICs'),'True'),variables('VM_networkProfile_Dual'),variables('VM_networkProfile_Single'))]",
+
+    // Hardware Profile Object
+    "VM_hardwareProfile": {
+      "vmSize": "[parameters('VM_Size')]"
+    },
+
+    ///////////////// Storage Profile Objects \\\\\\\\\\\\\\\\\\\\
+
+    // OS Disk Object \\
+
+    /// OS Disk Object Unmanaged Disks
+
+    // Custom Image TRUE
+
+    "VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_True": {
+      "osType": "[parameters('VM_OS_Type')]",
+      "name": "[concat(parameters('VM_Name'),'-','OSdisk')]",
+      "createOption": "FromImage",
+      "image": {
+        "uri": "[concat('https://',parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'),'.blob.core.windows.net/',parameters('VM_CustomImage_UnmanagedDisk_Source_Container_Name'),'/',parameters('VM_CustomImage_UnmanagedDisk_Source_Image_Name'))]"
+      },
+      "vhd": {
+        "uri": "[concat('https', '://', parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'), '.blob.core.windows.net', '/osdisks/', parameters('VM_Name'),'-','OSDisk.vhd')]"
+      },
+      "caching": "ReadWrite"
+    },
+
+    // Custom Image FALSE
+
+    "VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_False": {
+      "osType": "[parameters('VM_OS_Type')]",
+      "name": "[concat(parameters('VM_Name'),'-','OSdisk')]",
+      "createOption": "FromImage",
+      "vhd": {
+        "uri": "[concat('https', '://', parameters('VM_UnmanagedDisk_OSDisk_StorageAccount_Name'), '.blob.core.windows.net', '/osdisks/', parameters('VM_Name'),'-','OSDisk.vhd')]"
+      },
+      "caching": "ReadWrite"
+    },
+
+    /// OS Disk Object Managed Disks
+
+    // Custom Image TRUE
+
+    "VM_DisksType-ManagedDisk_OsDisk-CustomImage_True": {
+      "name": "[concat(parameters('VM_Name'),'-','OSdisk')]",
+      "osType": "[parameters('VM_OS_Type')]",
+      "caching": "ReadWrite",
+      "createOption": "FromImage",
+      "managedDisk": {
+        "storageAccountType": "[concat(parameters('VM_OSDisk_Type'),'_LRS')]"
+      }
+    },
+
+    // Custom Image FALSE
+
+    "VM_DisksType-ManagedDisk_OsDisk-CustomImage_False": {
+      "name": "[concat(parameters('VM_Name'),'-','OSdisk')]",
+      "osType": "[parameters('VM_OS_Type')]",
+      "caching": "ReadWrite",
+      "createOption": "FromImage",
+      "managedDisk": {
+        "storageAccountType": "[concat(parameters('VM_OSDisk_Type'),'_LRS')]"
+      }
+    },
+
+    /// OS Image Type Custom Image / Azure Image Selection Point
+    "VM_OS_ImageType_Selection": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),'CustomImage','AzureImage')]",
+
+
+
+    // Storage Profile Object Prepration \\
+
+    /// Unmanaged Disks \\\
+
+    // Custom Image AND Data Disk TRUE
+
+    "VM_DisksType-UnmanagedDisk_VMOS-CustomImage_VMDD-True": {
+      "osDisk": "[variables('VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_True')]",
+      "dataDisks": "[parameters('VM_DataDisk_Array')]"
+    },
+
+    // Custom Image AND Data Disk FALSE
+
+    "VM_DisksType-UnmanagedDisk_VMOS-CustomImage_VMDD-False": {
+      "osDisk": "[variables('VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_True')]",
+      "dataDisks": []
+    },
+
+    // Azure Image AND Data Disk TRUE
+
+    "VM_DisksType-UnmanagedDisk_VMOS-AzureImage_VMDD-True": {
+      "imageReference": "[parameters('VM_AzureImage_ImageReference')]",
+      "osDisk": "[variables('VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_False')]",
+      "dataDisks": "[parameters('VM_DataDisk_Array')]"
+    },
+
+    // Azure Image AND Data Disk FALSE
+
+    "VM_DisksType-UnmanagedDisk_VMOS-AzureImage_VMDD-False": {
+      "imageReference": "[parameters('VM_AzureImage_ImageReference')]",
+      "osDisk": "[variables('VM_DisksType-UnmanagedDisk_OsDisk-CustomImage_False')]",
+      "dataDisks": []
+    },
+
+    /// Managed Disks \\\
+
+    // Custom Image AND Data Disk TRUE
+
+    "VM_DisksType-ManagedDisk_VMOS-CustomImage_VMDD-True": {
+      "imageReference": {
+        "id": "[resourceId(parameters('VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name'),'Microsoft.Compute/images',parameters('VM_CustomImage_ManagedDisk_Source_Image_Name'))]"
+      },
+      "osDisk": "[variables('VM_DisksType-ManagedDisk_OsDisk-CustomImage_True')]",
+      "dataDisks": "[parameters('VM_DataDisk_Array')]"
+    },
+
+    // Custom Image AND Data Disk FALSE
+
+    "VM_DisksType-ManagedDisk_VMOS-CustomImage_VMDD-False": {
+      "imageReference": {
+        "id": "[resourceId(parameters('VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name'),'Microsoft.Compute/images',parameters('VM_CustomImage_ManagedDisk_Source_Image_Name'))]"
+      },
+      "osDisk": "[variables('VM_DisksType-ManagedDisk_OsDisk-CustomImage_True')]",
+      "dataDisks": []
+    },
+
+    // Azure Image AND Data Disk TRUE
+
+    "VM_DisksType-ManagedDisk_VMOS-AzureImage_VMDD-True": {
+      "imageReference": "[parameters('VM_AzureImage_ImageReference')]",
+      "osDisk": "[variables('VM_DisksType-ManagedDisk_OsDisk-CustomImage_False')]",
+      "dataDisks": "[parameters('VM_DataDisk_Array')]"
+    },
+
+    // Azure Image AND Data Disk FALSE
+
+    "VM_DisksType-ManagedDisk_VMOS-AzureImage_VMDD-False": {
+      "imageReference": "[parameters('VM_AzureImage_ImageReference')]",
+      "osDisk": "[variables('VM_DisksType-ManagedDisk_OsDisk-CustomImage_False')]",
+      "dataDisks": []
+    },
+
+
+
+    /// VM Storage Profile Custom Image / Azure Image Selection Point
+    "VM_StorageProfile_Selection": "[variables(concat('VM_DisksType-',parameters('VM_DisksType'),'_VMOS-',variables('VM_OS_ImageType_Selection'),'_VMDD-',parameters('VM_Include_DataDisks')))]",
+
+
+
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////// VIRTUAL MACHINE CATALOG \\\\\\\\\\\\\\\\\\\\\\
+    ////////////////////////////////////////////////////////////////////
+
+
+    // Virtual Machine: BYOL and Availability Set FALSE
+
+    "VM_License-BYOL_AS-False": {
+      "hardwareProfile": "[variables('VM_hardwareProfile')]",
+      "storageProfile": "[variables('VM_StorageProfile_Selection')]",
+      "osProfile": "[variables('VM_osProfile')]",
+      "networkProfile": "[variables('VM_networkProfile_Selection')]",
+      "diagnosticsProfile": "[variables('VM_diagnosticsProfile_Selection')]",
+      "licenseType": "Windows_Server"
+    },
+
+    // Virtual Machine: BYOL and Availability Set TRUE
+
+    "VM_License-BYOL_AS-True": {
+      "availabilitySet": {
+        "id": "[resourceId('Microsoft.Compute/availabilitySets',parameters('VM_AvailabilitySet_Name'))]"
+      },
+      "hardwareProfile": "[variables('VM_hardwareProfile')]",
+      "storageProfile": "[variables('VM_StorageProfile_Selection')]",
+      "osProfile": "[variables('VM_osProfile')]",
+      "networkProfile": "[variables('VM_networkProfile_Selection')]",
+      "diagnosticsProfile": "[variables('VM_diagnosticsProfile_Selection')]",
+      "licenseType": "Windows_Server"
+    },
+
+
+    // Virtual Machine: Licensed and Availability Set FALSE
+
+    "VM_License-Licensed_AS-False": {
+      "hardwareProfile": "[variables('VM_hardwareProfile')]",
+      "storageProfile": "[variables('VM_StorageProfile_Selection')]",
+      "osProfile": "[variables('VM_osProfile')]",
+      "networkProfile": "[variables('VM_networkProfile_Selection')]",
+      "diagnosticsProfile": "[variables('VM_diagnosticsProfile_Selection')]"
+    },
+
+
+    // Virtual Machine: Licensed and Availability Set TRUE
+
+    "VM_License-Licensed_AS-True": {
+      "availabilitySet": {
+        "id": "[resourceId('Microsoft.Compute/availabilitySets',parameters('VM_AvailabilitySet_Name'))]"
+      },
+      "hardwareProfile": "[variables('VM_hardwareProfile')]",
+      "storageProfile": "[variables('VM_StorageProfile_Selection')]",
+      "osProfile": "[variables('VM_osProfile')]",
+      "networkProfile": "[variables('VM_networkProfile_Selection')]",
+      "diagnosticsProfile": "[variables('VM_diagnosticsProfile_Selection')]"
+    },
+
+
+    // Windows and Linux Assessment for the License and BYOL case
+    "VM_OS_Type_Linux_LicenseType": "Licensed",
+    "VM_OS_Type_Windows_LicenseType": "[if(and(equals(parameters('VM_OS_Type'),'Windows'),equals(parameters('VM_OS_Windows_License'),'BYOL')),'BYOL','Licensed')]",
+    "VM_OS_Type_Assessment": "[if(equals(parameters('VM_OS_Type'),'Linux'),variables('VM_OS_Type_Linux_LicenseType'),variables('VM_OS_Type_Windows_LicenseType'))]"
+
+
+
+  },
+  "resources": [
+
+    {
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('VM_Name')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "Virtual Machine"
+      },
+      "dependsOn": [
+      ],
+      "properties": "[variables(concat('VM_License-',variables('VM_OS_Type_Assessment'),'_AS-',parameters('VM_WithAvailablitySet')))]"
+    }
+  ],
+  "outputs": {
+  }
+}

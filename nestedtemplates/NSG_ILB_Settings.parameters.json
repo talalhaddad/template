@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NSG_Frontend_Name": {
+      "value": "AKH-DEV-NEU-Application-NSG"
+    },
+    "ILB_Port_RuleName": {
+      "value": "SQL_Portarico"
+    }}
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Customer_ShortName": {
+      "value": "AKH"
+    },
+    "Environment_ShortName": {
+      "value": "DEV"
+    },
+    "Functionality_ShortName": {
+      "value": "GRE"
+    },
+    "VNET_Name": {
+      "value": "AKH-TRI-WEU-VNET"
+    },
+    "VNET_ResourceGroupName": {
+      "value": "akh-Trial-Network"
+    },
+    "VNET_Subnet_Name": {
+      "value": "Backend_TRI_WEU_Subnet"
+    },
+    "VNET_Subnet_NSG_Name": {
+      "value": "Backend_TRI_WEU_Subnet"
+    },
+    "VNET_Subnet_FirstSecondThirdOctet": {
+      "value": "192.168.1"
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-04-17\u0026ss=bfqt\u0026srt=sco\u0026sp=rwdlacup\u0026se=2017-12-06T23:28:32Z\u0026st=2017-12-06T03:28:32Z\u0026spr=https\u0026sig=sHYGJgiyo0wzadMdG%2BqvQ4yoaMv%2F33UNyftlUzXrxyU%3D"
+    },
+    "Subnet_NSG_Rules_Counter": {
+      "value": 128
+    },
+    "LoadBalancingRules_EnableFloatingIP": {
+      "value": true
+    },
+    "Update_Subnet_NSG_Rules": {
+      "value": "False"
+    }}
+}

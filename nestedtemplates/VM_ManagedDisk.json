@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "DataDisk_Name": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 34,
+      "metadata": {
+        "description": "The name of the disk"
+      }
+    },
+    "DataDisk_Account_Type": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "The type of disk"
+      }
+    },
+    "NumberOf_DataDisks": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 8
+    },
+    "DataDisk_DiskSizeGB": {
+      "type": "int",
+      "defaultValue": 20
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Compute/disks",
+      "name": "[concat(parameters('DataDisk_Name'),copyIndex(1))]",
+      "apiVersion": "2016-04-30-preview",
+      "tags": { "displayName": "Managed Data Disk" },
+      "copy": {
+        "name": "VM_DataDisks",
+        "count": "[parameters('NumberOf_DataDisks')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "[concat(parameters('DataDisk_Account_Type'),'_LRS')]",
+        "creationData": {
+          "createOption": "Empty"
+        },
+        "diskSizeGB": "[parameters('DataDisk_DiskSizeGB')]"
+      },
+      "dependsOn": []
+    }
+  ],
+  "outputs": {}
+}

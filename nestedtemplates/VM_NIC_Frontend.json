@@ -1,0 +1,389 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Network Interface"
+      }
+    },
+    "VM_LB_Type": {
+      "defaultValue": "Internal",
+      "type": "string",
+      "allowedValues": [
+        "Internal",
+        "External",
+        "Application_Gateway"
+      ],
+      "metadata": {
+        "description": "This is required if the VM_LoadBalanced is set to True, Internal Load Balancer is not exposed while the External Load Balancer has a Public IP with it. Or it deploys Application Gateway"
+      }
+    },
+
+    "PublicIP_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Public IP"
+      }
+    },
+    "PublicIP_DNS_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Public IP DNS"
+      }
+    },
+    "VNET_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Virtual Network the NIC will be connected to (must be in the same region)."
+      }
+    },
+    "VNET_ResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Virtual Network Resource Group the NIC will be connected to (must be in the same region)."
+      }
+    },
+    "VNET_Subnet_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Subnet on the Virtual Network the NIC will be attached to (must be in the same region)."
+      }
+    },
+    "VNET_Subnet_FirstSecondThirdOctet_IPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The first three octets of the subnet prefix the NIC will be attached to (e.g 192.168.0)."
+      }
+    },
+    "VNET_FourthOctet_IPAddress_Counter": {
+      "type": "int",
+      "defaultValue": 4,
+      "minValue": 4,
+      "maxValue": 254,
+      "metadata": {
+        "description": "The IP Address for the Network Interface, if '4' is selected, the the NIC IP combo with subnet will be '192.168.0.4'"
+      }
+    },
+    "NIC_AttachedTo_LoadBalancer": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the NIC is attached to a Load Balancer or not, if True, then the Load Balancer Resource ID is required below it."
+      }
+    },
+    "NIC_IPAddress_AllocationMethod": {
+      "defaultValue": "Static",
+      "type": "string",
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ],
+      "metadata": {
+        "description": "Specify the private IP allocation method"
+      }
+    },
+
+    "NIC_LB_BackendAddressPool_ID": {
+      "type": "string",
+      "defaultValue": "/subscriptions/fcebdb0c-44cf-4d89-8248-e9acdbafd358/resourceGroups/AKH-Testing/providers/Microsoft.Network/loadBalancers/AKH-DEV-GGG-ELB/backendAddressPools/AKH-DEV-GGG-ELB-pool",
+      "metadata": {
+        "description": "The Resource ID of the Load Balancer. e.g /subscriptions/...."
+      }
+    },
+
+    "NIC_AppGW_BackendAddressPool_ID": {
+      "type": "string",
+      "defaultValue": "/subscriptions/fcebdb0c-44cf-4d89-8248-e9acdbafd358/resourceGroups/AKH-Testing/providers/Microsoft.Network/loadBalancers/AKH-DEV-GGG-ELB/backendAddressPools/AKH-DEV-GGG-ELB-pool",
+      "metadata": {
+        "description": "The Resource ID of the AppGW. e.g /subscriptions/...."
+      }
+    },
+    "NIC_With_CustomDNS": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the NIC is will have a custom DNS Server IP Instead of the Azure DNS"
+      }
+    },
+    "NIC_DNS_IP": {
+      "type": "array",
+      "defaultValue": [
+        "10.200.4.4",
+        "10.200.4.5"
+      ],
+      "metadata": {
+        "description": "Specify the DNS Servers that the VM will use. This is an array, data is provided between quotes and comma seperated"
+      }
+    },
+    "Deployment_SAS_Token": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    // Templates Locations
+    "Templates_StorageAccount": "https://std3f88152.blob.core.windows.net",
+    "Templates_StorageContainer": "templates/VM/nestedtemplates",
+    "Template_NIC_PublicIP_JSON": "PublicIP.json",
+    "Template_NIC_Frontend_CustomDNS": "VM_NIC_Frontend_CustomDNS.json",
+
+    // NIC Public IP / LB Decisions
+    "NIC_IPAddress": "[concat(parameters('VNET_Subnet_FirstSecondThirdOctet_IPAddress'),'.',parameters('VNET_FourthOctet_IPAddress_Counter'))]",
+    "NIC_LB_Type_LB/AppGW_PublicIP_Choice": "[variables(concat('NIC_Config_LB','-',parameters('NIC_AttachedTo_LoadBalancer'),'_Type_', parameters('VM_LB_Type'),'_',parameters('NIC_IPAddress_AllocationMethod')))]",
+
+    //NIC-Internal LB
+    "NIC_Config_LB-False_Type_Internal_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_Internal_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-False_Type_Internal_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_Internal_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+    //NIC-External LB
+
+    "NIC_Config_LB-False_Type_External_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_External_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-False_Type_External_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_External_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+
+    //NIC Config _Type AppGW conditions
+
+    "NIC_Config_LB-False_Type_Application_Gateway_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_Application_Gateway_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "applicationGatewayBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_AppGW_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-False_Type_Application_Gateway_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True_Type_Application_Gateway_Dynamic": {
+
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "applicationGatewayBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_AppGW_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('PublicIP_Name'))]"
+      }
+    }
+
+
+
+  },
+  "resources": [
+    {
+      "condition": "[equals(parameters('NIC_With_CustomDNS'),'False')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('NIC_Name')]",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": { "displayName": "Network Interface" },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": "[variables('NIC_LB_Type_LB/AppGW_PublicIP_Choice')]"
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+          ]
+        },
+        "enableIPForwarding": false
+      },
+      "resources": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments',parameters('PublicIP_Name'))]"
+
+      ]
+    },
+    {
+      "condition": "[equals(parameters('NIC_With_CustomDNS'),'True')]",
+      "name": "[parameters('NIC_Name')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments',parameters('PublicIP_Name'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_NIC_Frontend_CustomDNS'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NIC_Name": { "value": "[parameters('NIC_Name')]" },
+          "NIC_DNS_IP": { "value": "[parameters('NIC_DNS_IP')]" },
+          "NIC_Settings": { "value": "[variables('NIC_LB_Type_LB/AppGW_PublicIP_Choice')]" }
+        }
+      }
+    },
+    {
+      "name": "[parameters('PublicIP_Name')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_NIC_PublicIP_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "PublicIP_Name": { "value": "[parameters('PublicIP_Name')]" },
+          "PublicIP_DNS_Name": { "value": "[parameters('PublicIP_DNS_Name')]" }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "NIC_ID": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/networkInterfaces',parameters('NIC_Name'))]"
+    },
+    "NIC_IP_Address": {
+      "type": "string",
+      "value": "[variables('NIC_IPAddress')]"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "AKH-DEV-BBB-1"
+    },
+    "VM_Size": {
+      "value": "Standard_D2s_v3"
+    },
+    "VM_OSDisk_StorageAccount_Name": {
+      "value": "akhdevbbbstd"
+    },
+    "VM_Diag_StorageAccount_Name": {
+      "value": "akhdevbbbdiag"
+    },
+    "VM_NumberOfDataDisks": {
+      "value": 2
+    },
+    "VM_DataDiskSizeGB": {
+      "value": 20
+    },
+    "VM_AdminUsername": {
+      "value": "ahmad"
+    },
+    "VM_AdminPassword": {
+      "value": "optra123qwe!"
+    },
+    "VM_ImageReference": {
+      "value": {
+        "sku": "2016-Datacenter",
+        "offer": "WindowsServer",
+        "publisher": "MicrosoftWindowsServer",
+        "version": "latest"
+      }
+    }}
+}

@@ -1,0 +1,239 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_NumberOfDataDisks": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 20
+    },
+    "VM_DataDiskSizeGB": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 4096
+    },
+    "VM_DataDisk_Caching": {
+      "type": "string",
+      "defaultValue": "None",
+      "allowedValues": [
+        "None",
+        "ReadOnly",
+        "ReadWrite"
+      ]
+    },
+    "VM_Name": {
+      "type": "string"
+    }
+  },
+    "variables": {
+        "DataDisk_Array_ManagedDisk": [
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-01')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 0,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-01'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-02')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 1,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-02'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-03')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 2,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-03'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-04')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 3,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-04'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-05')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 4,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-05'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-06')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 5,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-06'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-07')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 6,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-07'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-08')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 7,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-08'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-09')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 8,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-09'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-10')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 9,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-10'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-11')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 10,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-11'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-12')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 11,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-12'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-13')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 12,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-13'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-14')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 13,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-14'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-15')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 14,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-15'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-16')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 15,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-16'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-17')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 16,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-17'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-18')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 17,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-18'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-19')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 18,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-19'))]"
+            }
+          },
+          {
+            "name": "[concat(parameters('VM_Name'), '-DataDisk-20')]",
+            "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+            "lun": 19,
+            "caching": "[parameters('VM_DataDisk_Caching')]",
+            "createOption": "Attach",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('VM_Name'),'-','DataDisk-20'))]"
+            }
+          }
+        ]
+    },
+    "resources": [],
+    "outputs": {
+      "DataDisk_Array": {
+        "type": "array",
+        "value": "[take(variables('DataDisk_Array_ManagedDisk'),parameters('VM_NumberOfDataDisks'))]"
+      }
+    }
+}

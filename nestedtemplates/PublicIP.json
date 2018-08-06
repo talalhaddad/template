@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PublicIP_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the public IP"
+      }
+    },
+    "PublicIP_DNS_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the public IP"
+      }
+    },
+
+    "Static_Or_Dynamic": {
+      "type": "string",
+      "defaultValue": "Dynamic",
+      "allowedValues": [
+        "Dynamic",
+        "STatic"
+      ],
+      "metadata": {
+        "description": "The allocation method of the public IP"
+      }
+      }
+    },
+    "variables": {
+      "Static_or_Dynamic_Decision": "[if(equals(parameters('Static_Or_Dynamic'),'Static'),'Static','Dynamic')]"
+    },
+  "resources": [
+    {
+      "name": "[parameters('PublicIP_Name')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2017-06-01",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "PublicIP"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('Static_or_Dynamic_Decision')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('PublicIP_DNS_Name')]"
+        }
+      }
+    }
+
+  ],
+  "outputs": {
+    "PublicIP_ID": {
+      "type": "string",
+      "value": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIPAddresses',parameters('PublicIP_Name'))]"
+    }
+  }
+}

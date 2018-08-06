@@ -1,0 +1,144 @@
+{
+  
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "VM_Name": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 15,
+        "metadata": {
+          "description": "The name of the virtual machine, must be less than 15 characters"
+        }
+      },
+      "VM_Size": {
+        "type": "string",
+        "defaultValue": "Standard_E2s_v3",
+        "allowedValues": [
+          "Standard_D2s_v3",
+          "Standard_D4s_v3",
+          "Standard_D8s_v3",
+          "Standard_D16s_v3",
+          "Standard_E2s_v3",
+          "Standard_E4s_v3",
+          "Standard_E8s_v3",
+          "Standard_E16s_v3",
+          "Standard_E32s_v3",
+          "Standard_E64s_v3",
+          "Standard_DS1_v2",
+          "Standard_DS2_v2", /* Size of the Virtual Machine */
+          "Standard_DS3_v2",
+          "Standard_DS4_v2",
+          "Standard_DS5_v2",
+          "Standard_DS6_v2",
+          "Standard_DS7_v2",
+          "Standard_DS8_v2",
+          "Standard_DS9_v2",
+          "Standard_DS10_v2",
+          "Standard_DS11_v2",
+          "Standard_DS12_v2",
+          "Standard_DS13_v2",
+          "Standard_DS14_v2"
+        ]
+      },
+      "VM_Diag_StorageAccount_Name": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 34,
+        "metadata": {
+          "description": "The name of the VM OS Storage Account"
+        }
+      },
+      "VM_ImageReference": {
+        "type": "object"
+      },
+      "VM_AdminUsername": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 20,
+        "metadata": {
+          "description": "The name of the admin on virtual machine"
+        }
+      },
+      "VM_AdminPassword": {
+        "type": "securestring"
+      },
+      "VM_OS_Type": {
+        "type": "string",
+        "defaultValue": "Windows",
+        "allowedValues": [
+          "Windows",
+          "Linux"
+        ]
+      },
+      "VM_OSDisk_Account_Type": {
+        "type": "string",
+        "defaultValue": "Standard",
+        "allowedValues": [
+          "Standard",
+          "Premium"
+        ]
+      },
+      "VM_AS_Name": {
+        "type": "string"
+      }
+    },
+
+    "variables": {},
+    "resources": [
+      {
+        "apiVersion": "2016-04-30-preview",
+        "type": "Microsoft.Compute/virtualMachines",
+        "name": "[parameters('VM_Name')]",
+        "location": "[resourceGroup().location]",
+        "tags": {
+          "displayName": "Virtual Machine"
+        },
+        "dependsOn": [
+        ],
+        "properties": {
+          "availabilitySet": {
+            "id": "[resourceId('Microsoft.Compute/availabilitySets',parameters('VM_AS_Name'))]"
+          },
+          "hardwareProfile": {
+            "vmSize": "[parameters('VM_Size')]"
+          },
+          "storageProfile": {
+            "imageReference": "[parameters('VM_ImageReference')]",
+            "osDisk": {
+              "caching": "ReadWrite",
+              "osType": "[parameters('VM_OS_Type')]",
+              "name": "[concat(parameters('VM_Name'),'-','OSdisk')]",
+              "createOption": "FromImage",
+              "managedDisk": {
+                "storageAccountType": "[concat(parameters('VM_OSDisk_Account_Type'),'_LRS')]"
+              }
+            }
+            
+            
+          },
+          "osProfile": {
+            "computerName": "[parameters('VM_Name')]",
+            "adminUsername": "[parameters('VM_AdminUsername')]",
+            "adminPassword": "[parameters('VM_AdminPassword')]"
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', concat(parameters('VM_Name'),'-NIC-01')))]",
+                "properties": { "primary": true }
+              }
+            ]
+          },
+          "diagnosticsProfile": {
+            "bootDiagnostics": {
+              "enabled": true,
+              "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('VM_Diag_StorageAccount_Name')), '2016-01-01').primaryEndpoints['blob']]"
+            }
+          },
+          "licenseType": "Windows_Server"
+        }
+      }
+    ],
+    "outputs": {}
+  }

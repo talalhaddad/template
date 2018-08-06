@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "value": "akh-TTT-BBB-01"
+    },
+    "VM_OperatingSystem": {
+      "value": "Windows Server 2012 R2"
+    },
+    "VM_Size": {
+      "value": "Standard_DS1_v2"
+    },
+    "VM_AdminUsername": {
+      "value": "ahmad"
+    },
+    "VM_AdminPassword": {
+      "value": "optra123qwe!"
+    },
+    "VM_WithAvailablitySet": {
+      "value": "False"
+    },
+    "VM_AvailabilitySet_Name": {
+      "value": "akh-TTT-AS"
+    },
+    "VM_DisksType": {
+      "value": "UnmanagedDisk"
+    },
+    "VM_UnmanagedDisk_OSDisk_StorageAccount_Name": {
+      "value": "akhtttbbbstd"
+    },
+    "VM_Include_DataDisks": {
+      "value": "False"
+    },
+    "VM_UnmanagedDisk_DataDisk_StorageAccount_Name": {
+      "value": "akhtttbbbstd"
+    },
+    "VM_Diag_StorageAccount_Name": {
+      "value": "akhtttbbbdiag"
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-04-17\u0026ss=bfqt\u0026srt=sco\u0026sp=rwdlacup\u0026se=2017-12-18T16:43:15Z\u0026st=2017-12-18T01:43:15Z\u0026spr=https\u0026sig=t9utDbUv0mKPD0dkMpUj1rpKj9ZsUpWG9vJ3EQhu1Kg%3D"
+    },
+    "VM_OS_Windows_License": {
+      "value": "BYOL"
+    }}
+}

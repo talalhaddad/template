@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VM_Name": {
+      "type": "string"
+    },
+    "VM_Windows_CustomScript_Extension_File": {
+      "type": "string"
+    },
+    "Deployment_SAS_Token": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "Templates_StorageAccount": "https://rndsharedfiles.blob.core.windows.net",
+    "Templates_StorageContainer": "ebecsdev2customscripts",
+    "scriptParameters": "[concat('-ServiceName ', 'bits')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('VM_Name'),'/CustomScriptExtension')]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "VM Custom Script Extension"
+      },
+      "dependsOn": [
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.8",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', parameters('VM_Windows_CustomScript_Extension_File'), parameters('Deployment_SAS_Token'))]"
+          ],
+          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('Templates_StorageContainer'), '/', parameters('VM_Windows_CustomScript_Extension_File'), variables('scriptParameters'))]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

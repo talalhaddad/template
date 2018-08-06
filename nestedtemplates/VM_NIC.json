@@ -1,0 +1,237 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "NIC_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Network Interface"
+      }
+    },
+    "VNET_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Virtual Network the NIC will be connected to (must be in the same region)."
+      }
+    },
+    "VNET_ResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Virtual Network Resource Group the NIC will be connected to (must be in the same region)."
+      }
+    },
+    "VNET_Subnet_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Subnet on the Virtual Network the NIC will be attached to (must be in the same region)."
+      }
+    },
+    "VNET_Subnet_FirstSecondThirdOctet_IPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The first three octets of the subnet prefix the NIC will be attached to (e.g 192.168.0)."
+      }
+    },
+    "VNET_FourthOctet_IPAddress_Counter": {
+      "type": "int",
+      "defaultValue": 4,
+      "minValue": 4,
+      "maxValue": 254,
+      "metadata": {
+        "description": "The IP Address for the Network Interface, if '4' is selected, the the NIC IP combo with subnet will be '192.168.0.4'"
+      }
+    },
+    "NIC_AttachedTo_PublicIP": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the NIC has a public IP or not, if True, then the Public IP Resource ID is required below it."
+      }
+    },
+    "NIC_PublicIP_ID": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Resource ID of the Public IP. e.g /subscriptions/...."
+      }
+    },
+    "NIC_AttachedTo_LoadBalancer": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the NIC is attached to a Load Balancer or not, if True, then the Load Balancer Resource ID is required below it."
+      }
+    },
+
+    "NIC_IPAddress_AllocationMethod": {
+      "defaultValue": "Static",
+      "type": "string",
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ],
+      "metadata": {
+        "description": "Specify the private IP allocation method"
+      }
+    },
+
+
+    "NIC_LB_BackendAddressPool_ID": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Resource ID of the Load Balancer. e.g /subscriptions/...."
+      }
+    }
+  },
+  "variables": {
+
+    // NIC Public IP / LB Decisions
+    "NIC_IPAddress": "[concat(parameters('VNET_Subnet_FirstSecondThirdOctet_IPAddress'),'.',parameters('VNET_FourthOctet_IPAddress_Counter'))]",
+    "NIC_LB_PublicIP_Choice": "[variables(concat('NIC_Config_LB','-',parameters('NIC_AttachedTo_LoadBalancer'),'-PublicIP-',parameters('NIC_AttachedTo_PublicIP'), '_',parameters('NIC_IPAddress_AllocationMethod')))]",
+
+    "NIC_Config_LB-False-PublicIP-False_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True-PublicIP-False_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ]
+    },
+
+    "NIC_Config_LB-False-PublicIP-True_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[parameters('NIC_PublicIP_ID')]"
+      }
+    },
+
+    "NIC_Config_LB-True-PublicIP-True_Static": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Static",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[parameters('NIC_PublicIP_ID')]"
+      }
+    },
+
+
+
+
+
+    "NIC_Config_LB-False-PublicIP-False_Dynamic": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      }
+    },
+
+    "NIC_Config_LB-True-PublicIP-False_Dynamic": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ]
+    },
+
+    "NIC_Config_LB-False-PublicIP-True_Dynamic": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "publicIPAddress": {
+        "id": "[parameters('NIC_PublicIP_ID')]"
+      }
+    },
+
+    "NIC_Config_LB-True-PublicIP-True_Dynamic": {
+      "privateIPAddress": "[variables('NIC_IPAddress')]",
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[concat(resourceId(parameters('VNET_ResourceGroupName'),'Microsoft.Network/virtualNetworks', parameters('VNET_Name')), '/subnets/', parameters('VNET_Subnet_Name'))]"
+      },
+      "loadBalancerBackendAddressPools": [
+        {
+          "id": "[parameters('NIC_LB_BackendAddressPool_ID')]"
+        }
+      ],
+      "publicIPAddress": {
+        "id": "[parameters('NIC_PublicIP_ID')]"
+      }
+    }
+
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('NIC_Name')]",
+      "apiVersion": "2017-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": { "displayName": "Network Interface" },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": "[variables('NIC_LB_PublicIP_Choice')]"
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+          ]
+        },
+        "enableIPForwarding": false
+      },
+      "resources": [],
+      "dependsOn": []
+    }
+  ],
+  "outputs": {
+    "NIC_ID": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/networkInterfaces',parameters('NIC_Name'))]"
+    },
+    "NIC_IP_Address": {
+      "type": "string",
+      "value": "[variables('NIC_IPAddress')]"
+    }
+  }
+}

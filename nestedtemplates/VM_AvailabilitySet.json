@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AS_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the availability set"
+      }
+    },
+    "AS_VM_Disk_Type": {
+      "type": "string",
+      "allowedValues": [
+        "ManagedDisk",
+        "UnmanagedDisk"
+      ],
+      "metadata": {
+        "description": "The name of the public IP"
+      }
+    }
+  },
+  "variables": {
+    "AS_Sku": "[variables(concat('AS_Sku_',parameters('AS_VM_Disk_Type')))]",
+    "AS_Sku_ManagedDisk": "Aligned",
+    "AS_Sku_UnmanagedDisk": "Classic"
+  },
+  "resources": [
+    {
+      "name": "[parameters('AS_Name')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "[variables('AS_Sku')]"
+      },
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2017-03-30",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "Availability Set"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 3,
+        "platformFaultDomainCount": 2
+      }
+    }
+  ],
+  "outputs": {
+    "AS_ID": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Compute/availabilitySets',parameters('AS_Name'))]"
+    }
+  }
+}

@@ -1,17 +1,200 @@
 {
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "existingBackupVaultName": {
-      "value": "$BackupName$"
+
+
+    "VM_NIC_Type": {
+      "value": "Frontend"
     },
-    "registeredContainers": {
+    "VNET_ResourceGroupName": {
+      "value": "akh-Trial-NET"
+    },
+    "VNET_Name": {
+      "value": "akh-TST-WEU-VNET"
+    },
+
+
+    "VM_Windows_BG_Extension": {
+      "value": "False"
+    },
+    "VM_Windows_Antimalware_Extension": {
+      "value": "False"
+    },
+    "VM-or-LB_Subnet_Name_FirstSecondThirdOctet": {
       "value": [
-        $VMS$
+        "Frontend_TST_WEU_Subnet",
+        "192.168.1"
       ]
     },
-    "policyName": {
-      "value": "$PolicyName$"
+    "VM_NIC_IPAddress_Allocation_Method": {
+      "value": "Dynamic"
+    },
+    "VM_LoadBalanced": {
+      "value": "False"
+    },
+    "VM_LB_Type": {
+      "value": "External"
+    },
+
+    "VM_DisksType": {
+      "value": "UnmanagedDisk"
+    },
+    "VM_OSDisk_Type": {
+      "value": "Standard"
+    },
+    "VM_Include_DataDisks": {
+      "value": "False"
+    },
+    "VM_LB_Update_Subnet_NSG_Rules": {
+      "value": "True"
+    },
+    "VM_WithAvailablitySet": {
+      "value": "False"
+    },
+    "VM_AppGW_WAF_Mode": {
+      "value": "Detection"
+    },
+    "VM_AppGW_WAF_RuleSet_Version": {
+      "value": "2.2.9"
+    },
+    "VM_OS_Windows_License": {
+      "value": "Licensed"
+    },
+    "VM_NumberOfInstances": {
+      "value": 1
+    },
+    "Environment_ShortName": {
+      "value": "erd"
+    },
+    "VM_NIC_IPAddress_Counter": {
+      "value": 45
+    },
+    "Customer_ShortName": {
+      "value": "lsh"
+    },
+
+    "VM_AppGateway_Subnet_Name": {
+      "value": "Appgwsubnet"
+    },
+    "VM_AppGateway_Size": {
+      "value": "WAF_Medium"
+    },
+    "VM_Functionality_ShortName": {
+      "value": "CUS"
+    },
+    "VM_Size": {
+      "value": "Standard_D2s_v3"
+    },
+    "VM_AdminUsername": {
+      "value": "layan"
+    },
+    "VM_DataDiskSizeGB": {
+      "value": 2
+    },
+    "VM_InstancesStartingCounter": {
+      "value": 1
+    },
+    "Location_ShortName": {
+      "value": "WEU"
+    },
+    "VM_LB_Include_InboundNAT_Rules": {
+      "value": "True"
+    },
+    "VM_NIC_With_CustomDNS": {
+      "value": "False"
+    },
+    "VM_ILB_LoadBalancer_IP_Counter": {
+      "value": 55
+    },
+    "VM_DataDisk_Type": {
+      "value": "Standard"
+    },
+    "VM_NumberOfDataDisks": {
+      "value": 1
+    },
+    "VM_NIC_DNS_IP": {
+      "value": [
+        "192.168.2.30"
+      ]
+    },
+    "VM_DomainJoin_DomainName": {
+      "value": "ebecsrnd.com"
+    },
+    "VM_Windows_JoinToExistingDomain_Extension": {
+      "value": "False"
+    },
+    "VM_DomainJoin_OU_Path": {
+      "value": "OU=Domain Controllers; DC=ebecsrnd; DC=COM"
+    },
+    "VM_DomainJoin_DomainAdmin_UserName": {
+      "value": "layan@ebecsrnd.com"
+    },
+    "VM_LB_LoadBalancingRules_EnableFloatingIP": {
+      "value": false
+    },
+    "VM_LB_LoadBalancingRules_Names": {
+      "value": [
+        "RDP-Rule"
+      ]
+    },
+    "VM_LB_LoadBalancingRules_Ports": {
+      "value": [
+        3389
+      ]
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name": {
+      "value": "rndsharedfiles"
+    },
+    "VM_Diagnostics_Enabled": {
+      "value": "True"
+    },
+    "VM_OS_Type": {
+      "value": "Windows"
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Container_Name": {
+      "value": "daas"
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Image_Name": {
+      "value": "aosimage.vhd"
+    },
+    "VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name": {
+      "value": "lsh-Trial-Computer"
+    },
+    "VM_CustomImage_ManagedDisk_Source_Image_Name": {
+      "value": "lsh-VM1-DaaS-Image"
+    },
+    "VM_LB_InboundNAT_Rules_EnableFloatingIP": {
+      "value": true
+    },
+ 
+    "VM_LB_Subnet_NSG_Rules_Counter": {
+      "value": 300
+    },
+    "VM_With_Plan": {
+      "value": "True"
+    },
+    "VM_OperatingSystem": {
+      "value": "Other"
+    },
+    "VM_DomainJoin_DomainAdmin_Password": {
+      "value": "password"
+    },
+    "Deployment_SAS_Token": {
+      "value": "?sv=2017-07-29\u0026ss=bfqt\u0026srt=sco\u0026sp=rwdlacup\u0026se=2018-05-17T22:25:25Z\u0026st=2018-05-14T03:25:25Z\u0026spr=https\u0026sig=QgoVoTMQMQnmLgoLtWzVZdgJKpjIX45b1FRDSeK%2BVr4%3D"
+    },
+    "VM_AdminPassword": {
+      "value": "Ebecs1234!@#$"
+    },
+    "VM_CustomImage_Settings": {
+      "value": {
+        "publisher": "manageengine",
+        "offer": "passwordmanagerpro-ee",
+        "sku": "pmp9100",
+        "version": "latest"
+      }
     }
+
+
   }
 }

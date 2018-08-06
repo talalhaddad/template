@@ -117,8 +117,8 @@
 
   },
   "variables": {
-    "Templates_StorageAccount": "https://std3f88152.blob.core.windows.net/templates/VM",
-    "Templates_StorageContainer": "templates/VM/nestedtemplates",
+    "Templates_StorageAccount": "https://rndsharedfiles.blob.core.windows.net",
+    "Templates_StorageContainer": "ebecsdev2templates",
     "Template_NIC_Backend_CustomDNS": "VM_NIC_Backend_CustomDNS.json",
 
     // NIC Public IP / LB Decisions

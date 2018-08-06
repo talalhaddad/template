@@ -2,178 +2,1586 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "adminUsername": {
+    "Customer_ShortName": {
       "type": "string",
+      "defaultValue": "XXX",
+      "minLength": 3,
+      "maxLength": 3,
       "metadata": {
-        "description": "Username for the Virtual Machine."
+        "description": "Naming Scheme Parameter: Customer Name means the short name of the customer, such as 'EBC' for eBECS"
       }
     },
-    "adminPassword": {
+    "Environment_ShortName": {
+      "type": "string",
+      "defaultValue": "ZZZ",
+      "minLength": 3,
+      "maxLength": 3,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Environment means the type of environment you are trying to deploy, 'DEV' means development, 'PRD' means production"
+      }
+    },
+    "Location_ShortName": {
+      "type": "string",
+      "defaultValue": "WEU",
+      "allowedValues": [
+        "UKS",
+        "UKN",
+        "WEU",
+        "NEU",
+        "EUS",
+        "WUS",
+        "NUS",
+        "SUS",
+        "CUS",
+        "CAE",
+        "CAC",
+        "EAA",
+        "SEA"
+      ],
+      "minLength": 3,
+      "maxLength": 3,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Location means the region you are trying to deploy into, 'EUW' means Europe West, 'EUN' means Europe North"
+      }
+    },
+    "VM_Functionality_ShortName": {
+      "type": "string",
+      "defaultValue": "SQL",
+      "minLength": 2,
+      "maxLength": 4,
+      "metadata": {
+        "description": "Naming Scheme Parameter: Functionality Name means the short name of the VM function, such as 'SQL', 'APP', 'AOS', 'EP', 'CRM', 'NAV'."
+      }
+    },
+    "VM_OS_Type": {
+      "type": "string",
+      "defaultValue": "Windows",
+      "allowedValues": [
+        "Windows",
+        "Linux"
+      ]
+    },
+    "VM_OperatingSystem": {
+      "type": "string",
+      "defaultValue": "Windows Server 2016",
+      "allowedValues": [
+        "Custom Image",
+        "Windows Server 2016",
+        "Windows Server 2012 R2",
+        "SUSE Linux Enterprise 12 SP3",
+        "RedHat Enterprise Linux 7.4",
+        "Oracle Linux Enterprise 7.4",
+        "Other"
+      ],
+      "metadata": {
+        "description": "The type of the operating system on the virtual machine set. Custom Image implies the need to fill in parameters for a Source Storage Account if its unmanaged and Image Resource ID if managed Disk"
+      }
+    },
+    "VM_CustomImage_Settings": {
+      "type": "object",
+      "defaultValue": {
+        "sku": "2012-R2-Datacenter",
+        "offer": "WindowsServer",
+        "publisher": "MicrosoftWindowsServer",
+        "version": "latest"
+      },
+      "metadata": {
+        "description": "Fill this with the Image Refernce for the OS Type you selected above.",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom Image"
+      }
+    },
+
+
+    "VM_OS_Windows_License": {
+      "type": "string",
+      "defaultValue": "Licensed",
+      "allowedValues": [
+        "Licensed",
+        "BYOL"
+      ],
+      "metadata": {
+        "description": "If Windows Server is selected, select whether you're using the Hybrid Cloud Benefit for using your own license",
+        "DependesOn": "VM_OS_Type",
+        "ActivateValue": "Windows"
+      }
+    },
+
+    "VM_With_Plan": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "False",
+        "True"
+      ],
+
+      "metadata": {
+        "description": "Set it to 'True' only if the OS has a special plan. Example: Password Manager Pro"
+      }
+
+    },
+    "VM_Plan_OS": {
+      "type": "string",
+      "defaultValue": "Managed_Password_Pro",
+
+      "metadata": {
+        "description": "Skip this if the previous parameter is false",
+        "DependesOn": "VM_With_Plan",
+        "ActivateValue": "True"
+      }
+
+    },
+
+    "VM_Plan": {
+      "type": "object",
+      "defaultValue": {
+
+        "name": "pmp9100",
+        "publisher": "manageengine",
+        "product": "passwordmanagerpro-ee"
+      },
+      "metadata": {
+        "description": "Skip this if the VM_With_Plan parameter is false",
+        "DependesOn": "VM_With_Plan",
+        "ActivateValue": "True"
+      }
+
+    },
+
+
+
+
+    "VM_Size": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v3",
+      "allowedValues": [
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_E2s_v3",
+        "Standard_E4s_v3",
+        "Standard_E8s_v3",
+        "Standard_E16s_v3",
+        "Standard_E32s_v3",
+        "Standard_E64s_v3",
+        "Standard_DS1_v2",
+        "Standard_DS2_v2",
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_DS6_v2",
+        "Standard_DS7_v2",
+        "Standard_DS8_v2",
+        "Standard_DS9_v2",
+        "Standard_DS10_v2",
+        "Standard_DS11_v2",
+        "Standard_DS12_v2",
+        "Standard_DS13_v2",
+        "Standard_DS14_v2"
+      ]
+    },
+    "VM_NumberOfInstances": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 10,
+      "metadata": {
+        "description": "Define the Number of Virtual Machines to Deploy. The Default is '1'."
+      }
+    },
+    "VM_InstancesStartingCounter": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "This counter is important. It determines on which instance number to start deploying. If you have previously deployed 2 instances, and you want to increase them, then definatly start with the number 3 to avoid issues."
+      }
+    },
+    "VM_AdminUsername": {
+      "type": "string",
+      "defaultValue": "layan",
+      "metadata": {
+        "description": "Admin Account username"
+      }
+    },
+    "VM_AdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the Virtual Machine."
+        "description": "The password of the admin account"
       }
     },
-    "dnsLabelPrefix": {
+    "VM_WithAvailablitySet": {
+      "defaultValue": "True",
       "type": "string",
-      "metadata": {
-        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-      }
-    },
-    "windowsOSVersion": {
-      "type": "string",
-      "defaultValue": "2016-Datacenter",
       "allowedValues": [
-        "2008-R2-SP1",
-        "2012-Datacenter",
-        "2012-R2-Datacenter",
-        "2016-Nano-Server",
-        "2016-Datacenter-with-Containers",
-        "2016-Datacenter"
+        "True",
+        "False"
       ],
       "metadata": {
-        "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+        "description": "Specify if the Virtual Machine will be contained in an availability Set, if 'True', then an AS will be created for the VM Functionality."
       }
+    },
+    "VM_DisksType": {
+      "defaultValue": "ManagedDisk",
+      "type": "string",
+      "allowedValues": [
+        "ManagedDisk",
+        "UnmanagedDisk"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM set will use Managed Disks or Unmanaged Disks. Managed Disks act as their own resource while unmanaged disks are stored in storage accounts."
+      }
+    },
+    "VM_OSDisk_Type": {
+      "defaultValue": "Standard",
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM OS Disk will be Standard or Premium. "
+      }
+    },
+    "VM_Include_DataDisks": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "False",
+        "True"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM contains Data Disks or not. "
+      }
+    },
+    "VM_DataDisk_Type": {
+      "defaultValue": "Standard",
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM Data Disks will be Standard or Premium. ",
+        "DependesOn": "VM_Include_DataDisks",
+        "ActivateValue": "True",
+        "DefaultValue": "True"
+      }
+    },
+    "VM_NumberOfDataDisks": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 8,
+      "metadata": {
+        "DependesOn": "VM_Include_DataDisks",
+        "ActivateValue": "True",
+        "DefaultValue": "True"
+      }
+    },
+    "VM_DataDiskSizeGB": {
+      "type": "int",
+      "defaultValue": 20,
+      "metadata": {
+        "DependesOn": "VM_Include_DataDisks",
+        "ActivateValue": "True",
+        "DefaultValue": "True"
+      }
+    },
+    "VM_Diagnostics_Enabled": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM has diagnostics enabled or disabled"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name": {
+      "type": "string",
+      "defaultValue": "ebecsstorageaccount",
+      "minLength": 5,
+      "maxLength": 34,
+      "metadata": {
+        "description": "Specify the name of the storage account where the source image resides",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom^Image",
+        "Condition": "VM_DisksType",
+        "ConditionValue": "UnmanagedDisk"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Container_Name": {
+      "type": "string",
+      "defaultValue": "images",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the container in the storage account where the source image resides",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom^Image",
+        "Condition": "VM_DisksType",
+        "ConditionValue": "UnmanagedDisk"
+      }
+    },
+    "VM_CustomImage_UnmanagedDisk_Source_Image_Name": {
+      "type": "string",
+      "defaultValue": "testimage.vhd",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the image name in the container",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom^Image",
+        "Condition": "VM_DisksType",
+        "ConditionValue": "UnmanagedDisk"
+      }
+    },
+    "VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name": {
+      "type": "string",
+      "defaultValue": "ResourceGroupA",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name of the resource group that contains the Image VHD Resource",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom^Image",
+        "Condition": "VM_DisksType",
+        "ConditionValue": "ManagedDisk"
+      }
+    },
+    "VM_CustomImage_ManagedDisk_Source_Image_Name": {
+      "type": "string",
+      "defaultValue": "DaaS-Image",
+      "minLength": 1,
+      "metadata": {
+        "description": "Specify the name Image Resource. The template automatically constructs the template resource ID",
+        "DependesOn": "VM_OperatingSystem",
+        "ActivateValue": "Custom^Image",
+        "Condition": "VM_DisksType",
+        "ConditionValue": "ManagedDisk"
+      }
+    },
+    "VNET_Name": {
+      "type": "string",
+      "defaultValue": "CUS-ENV-LOC-VNET",
+      "metadata": {
+        "description": "This parameter is needed if you are not deploying a VNET in this deployment. Even if you are, you could specify its name to overwrite the default CUS-ENV-LOC-VNET"
+      }
+    },
+    "VNET_ResourceGroupName": {
+      "type": "string",
+      "defaultValue": "CUS-ENV-LOC-NTWRK-RG",
+      "metadata": {
+        "description": "The name of the resource group containing the VNET, this parameter is required when selecting 'False for VNET in Same Resource Group, indicating the VNET is in another Resource Group. If a new VNET and RG VNET is created, the name of RG should be CUS-ENV-LOC-NTWRK-RG"
+      }
+    },
+    "VM_Dual_NICs": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify whether the VM has two NICs or a Single NIC"
+      }
+    },
+    "VM_NIC_IPAddress_Allocation_Method": {
+      "defaultValue": "Static",
+      "type": "string",
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ],
+      "metadata": {
+        "description": "Specify the private IP allocation method"
+      }
+    },
+    "VM_NIC_IPAddress_Counter": {
+      "type": "int",
+      "defaultValue": 30,
+      "minValue": 30,
+      "maxValue": 50,
+      "metadata": {
+        "description": "The IP Address for the Network Interface, if '4' is selected, the the NIC IP combo with subnet will be '192.168.0.4'. This number will increment based on the number of instances specified"
+      }
+    },
+    "VM_NIC_Type": {
+      "defaultValue": "Backend",
+      "type": "string",
+      "allowedValues": [
+        "Frontend",
+        "Backend"
+      ],
+      "metadata": {
+        "description": "Specify if the Virtual Machine is on the Frontend subnet, if 'True', then a Public IP will be created for the VM."
+      }
+    },
+    "VM_LoadBalanced": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "False",
+        "True"
+      ],
+      "metadata": {
+        "description": "If The VM Load Balanced is set to True, then all parameters with 'VM_LB_' are required."
+      }
+    },
+    "VM_LB_Type": {
+      "defaultValue": "Internal",
+      "type": "string",
+      "allowedValues": [
+        "Internal",
+        "External",
+        "Application_Gateway"
+      ],
+      "metadata": {
+        "description": "This is required if the VM_LoadBalanced is set to True, Internal Load Balancer is not exposed while the External Load Balancer has a Public IP with it. Or it deploys Application Gateway",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM-or-LB_Subnet_Name_FirstSecondThirdOctet": {
+      "type": "array",
+      "defaultValue": [
+        "Application",
+        "10.200.4"
+      ],
+      "metadata": {
+        "description": "Specify the VM / LB subnet that will be connected to. This is an array, define it just as the default value specified for you. The first section is for the Subnet Name, and the second part is the prefix of its IP address (e.g. xxx.xxx.xxx)",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_Include_LoadBalancingRules": {
+      "type": "string",
+      "defaultValue": "True",
+      "allowedValues": [
+        "True"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_LoadBalancingRules_EnableFloatingIP": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Enable Floating IP On LB Rules",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_ILB_LoadBalancer_IP_Counter": {
+      "type": "int",
+      "defaultValue": 50,
+      "minValue": 50,
+      "maxValue": 59,
+      "metadata": {
+        "description": "The IP Counter that creates the last octet from the IP Address. This only applies for an Internal Load Balancer Type. If Subnet is '10.200.1' and this counter is at '50'. Then the ILB IP will be '10.200.1.50'",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_LoadBalancingRules_Names": {
+      "type": "array",
+      "defaultValue": [
+        "SQL-Rule",
+        "AX-Rule"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_LoadBalancingRules_Ports": {
+      "type": "array",
+      "defaultValue": [
+        1433,
+        2712
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it.",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_Include_InboundNAT_Rules": {
+      "type": "string",
+      "defaultValue": "False",
+      "allowedValues": [
+        "False",
+        "True"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_InboundNAT_Rules_EnableFloatingIP": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        false,
+        true
+      ],
+      "metadata": {
+        "description": "Enable Floating IP On NAT Rules",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_Inbound_NAT_Rules_Names": {
+      "type": "array",
+      "defaultValue": [
+        "VM1-RDP",
+        "VM2-RDP"
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Names, as an Array",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_InboundNAT_Rules_Backend_Port": {
+      "type": "int",
+      "defaultValue": 3389,
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it.",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_InboundNAT_Rules_Frontend_Ports": {
+      "type": "array",
+      "defaultValue": [
+        3389,
+        3390
+      ],
+      "metadata": {
+        "description": "The Load Balancing Rules Ports, as an Array. The first Port is for the first Rule Name defined above it.",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_Update_Subnet_NSG_Rules": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "This parameter determines whether the NSG settings should be updated to open Load Balancer Ports, only use this if an NSG exists for the subnet",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_LB_Subnet_NSG_Rules_Counter": {
+      "type": "int",
+      "defaultValue": 125,
+      "minValue": 125,
+      "metadata": {
+        "description": "The priority counter for the NSG Update. Be sure to select un-used priorities. Minimum priority is 125",
+        "DependesOn": "VM_LoadBalanced",
+        "ActivateValue": "True"
+      }
+    },
+
+    "VM_AppGateway_Subnet_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "select the subnet that you would like to deploy AppGW into, it should be emoty and solely for AppGW",
+        "DependesOn": "VM_LB_Type",
+        "ActivateValue": "Application_Gateway"
+      }
+    },
+
+
+    "VM_AppGateway_Size": {
+      "type": "string",
+      "allowedValues": [
+        "WAF_Medium",
+        "WAF_Large"
+      ],
+      "metadata": {
+        "description": "if you choose to creat an application gateway, you need to specify the size",
+        "DependesOn": "VM_LB_Type",
+        "ActivateValue": "Application_Gateway"
+      }
+    },
+
+    "VM_AppGW_WAF_Mode": {
+      "type": "string",
+      "allowedValues": [
+        "Detection",
+        "Prevention"
+      ],
+      "metadata": {
+        "DependesOn": "VM_LB_Type",
+        "ActivateValue": "Application_Gateway"
+      }
+    },
+
+
+    "VM_AppGW_WAF_RuleSet_Version": {
+      "type": "string",
+      "allowedValues": [
+        "2.2.9",
+        "3.0"
+      ],
+      "metadata": {
+        "DependesOn": "VM_LB_Type",
+        "ActivateValue": "Application_Gateway"
+      }
+    },
+
+    "VM_Windows_BG_Extension": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ]
+    },
+    "VM_Windows_Antimalware_Extension": {
+      "defaultValue": "True",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "DependesOn": "VM_Windows_BG_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_NIC_With_CustomDNS": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "description": "Specify if the NIC is will have a custom DNS Server IP Instead of the Azure DNS",
+        "DependesOn": "VM_Windows_BG_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_NIC_DNS_IP": {
+      "type": "array",
+      "defaultValue": [
+        "10.200.4.4",
+        "10.200.4.5"
+      ],
+      "metadata": {
+        "description": "Specify the DNS Servers that the VM will use. This is an array, data is provided between quotes and comma seperated",
+        "DependesOn": "VM_Windows_BG_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_Windows_JoinToExistingDomain_Extension": {
+      "defaultValue": "False",
+      "type": "string",
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "metadata": {
+        "DependesOn": "VM_Windows_BG_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_DomainJoin_DomainName": {
+      "type": "string",
+      "defaultValue": "domain.com",
+      "metadata": {
+        "description": "The FQDN of the AD domain",
+        "DependesOn": "VM_Windows_JoinToExistingDomain_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_DomainJoin_OU_Path": {
+      "defaultValue": "OU=Domain Controllers; DC=domainname; DC=COM",
+      "type": "string",
+      "metadata": {
+        "description": "Specifies an organizational unit (OU) for the domain account. Enter the full distinguished name of the OU. Example: (OU=testOU; DC=domain; DC=Domain; DC=com) ",
+        "DependesOn": "VM_Windows_JoinToExistingDomain_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_DomainJoin_DomainAdmin_UserName": {
+      "type": "string",
+      "defaultValue": "user@domain.com",
+      "metadata": {
+        "description": "Username of the account on the domain example (domainadmin@domain.com)",
+        "DependesOn": "VM_Windows_JoinToExistingDomain_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "VM_DomainJoin_DomainAdmin_Password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the account on the domain",
+        "DependesOn": "VM_Windows_JoinToExistingDomain_Extension",
+        "ActivateValue": "True"
+      }
+    },
+    "Deployment_SAS_Token": {
+      "type": "securestring"
     }
+
+
   },
   "variables": {
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-    "nicName": "myVMNic",
-    "addressPrefix": "10.0.0.0/16",
-    "subnetName": "Subnet",
-    "subnetPrefix": "10.0.0.0/24",
-    "publicIPAddressName": "myPublicIP",
-    "vmName": "SimpleWinVM",
-    "virtualNetworkName": "MyVNET",
-    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+    // Templates Locations
+    "Template_VM_JSON": "Virtual_Machine.json",
+    "Template_VM_With_Plan_JSON": "Virtual_Machine_With_Plan.json",
+    "Template_VM_AppGW": "AppGW.json",
+    "Templates_StorageAccount": "https://std3f88152.blob.core.windows.net",
+    "Templates_StorageContainer": "templates/VM/nestedtemplates",
+    "Template_VM_LB_ILB_True": "VM_ILB.json",
+    "Template_VM_LB_ELB_True": "VM_ELB.json",
+    "Template_VM_NIC_Frontend_JSON": "VM_NIC_Frontend.json",
+    "Template_VM_NIC_Backend_JSON": "VM_NIC_Backend.json",
+    "Template_VM_AS_JSON": "VM_AvailabilitySet.json",
+    "Template_VM_Storage_JSON": "VM_StorageAccount.json",
+    "Template_VM_ManagedDisk_JSON": "VM_ManagedDisk.json",
+    // Extension Templates
+    "Template_VM_Windows_BG_Extension": "VM_Windows_BG_Extension.json",
+    "Template_VM_Windows_Antimalware_Extension": "VM_Windows_Antimalware_Extension.json",
+    "Template_VM_Windows_CustomScript_Extension": "VM_Windows_CustomScriptExtension.json",
+    "Template_VM_Windows_JoinToExistingDomain_Extension": "VM_Windows_JoinToExistingDomain_Extension.json",
+
+    // Disk Arrays
+
+    "Template_VM_UnmanagedDisk_DataDisk_Array_JSON": "DataDisk_Array_UnmanagedDisk.json",
+    "Template_VM_ManagedDisk_DataDisk_Array_JSON": "DataDisk_Array_ManagedDisk.json",
+
+    // VM Subnet Name Extraction
+    "VM_Subnet_Name": "[parameters('VM-or-LB_Subnet_Name_FirstSecondThirdOctet')[0]]",
+    "VM_Subnet_NSG_Name": "[concat(parameters('Customer_ShortName'),'-',parameters('Environment_ShortName'),'-',parameters('Location_ShortName'),'-',split(parameters('VM-or-LB_Subnet_Name_FirstSecondThirdOctet')[0],'_')[0],'-NSG')]",
+    //ILB Deployment Settings:
+
+    //LB Names
+    "LB_External": "[concat(parameters('Customer_ShortName'), '-', parameters('Environment_ShortName'),'-', parameters('VM_Functionality_ShortName'),'-', 'ELB')]",
+    "LB_External_Pool": "[concat(variables('LB_External'),'-pool')]",
+    "LB_Internal": "[concat(parameters('Customer_ShortName'), '-', parameters('Environment_ShortName'),'-', parameters('VM_Functionality_ShortName'),'-', 'ILB')]",
+    "LB_Internal_Pool": "[concat(variables('LB_Internal'),'-pool')]",
+    "App_GW": "[concat(parameters('Customer_ShortName'), '-', parameters('Environment_ShortName'),'-', parameters('VM_Functionality_ShortName'),'-', 'AppGW')]",
+    "App_GW_Pool": "appGatewayBackendPool",
+
+
+    "VM_Subnet_FirstSecondThirdOctet_IPAddress": "[parameters('VM-or-LB_Subnet_Name_FirstSecondThirdOctet')[1]]",
+
+
+
+    // VM Name
+    "VM_Name": "[concat(parameters('Customer_ShortName'),'-',parameters('Environment_ShortName'),'-',parameters('VM_Functionality_ShortName'))]",
+
+    //Storage Accounts for VM Functionality
+    "VM_Diag_StorageAccount_Name": "[concat(replace(toLower(variables('VM_Name')),'-',''),'diag')]",
+    "VM_Std_StorageAccount_Name": "[concat(replace(toLower(variables('VM_Name')),'-',''),'std')]",
+    "VM_Prm_StorageAccount_Name": "[concat(replace(toLower(variables('VM_Name')),'-',''),'prm')]",
+
+    // VM NIC Settings:
+    "VM_NIC_Frontend": "[if(equals(parameters('VM_NIC_Type'),'Frontend'),'True','False')]",
+    "VM_NIC_Backend": "[if(equals(parameters('VM_NIC_Type'),'Backend'),'True','False')]",
+
+
+
+
+    // VM OS Settings
+
+    "OS-Windows Server 2012 R2": {
+      "sku": "2012-R2-Datacenter",
+      "offer": "WindowsServer",
+      "publisher": "MicrosoftWindowsServer",
+      "version": "latest"
+    },
+
+    "OS-Windows Server 2016": {
+      "sku": "2016-Datacenter",
+      "offer": "WindowsServer",
+      "publisher": "MicrosoftWindowsServer",
+      "version": "latest"
+    },
+
+    "OS-SUSE Linux Enterprise 12 SP3": {
+      "publisher": "SUSE",
+      "offer": "SLES",
+      "sku": "12-SP3",
+      "version": "latest"
+    },
+
+    "OS-RedHat Enterprise Linux 7.4": {
+      "publisher": "RedHat",
+      "offer": "RHEL",
+      "sku": "7-RAW",
+      "version": "latest"
+    },
+
+    "OS-Oracle Linux Enterprise 7.4": {
+      "publisher": "Oracle",
+      "offer": "Oracle-Linux",
+      "sku": "7.4",
+      "version": "latest"
+    },
+
+    /*   "OS-Managed_Password_Pro": {
+      "publisher": "manageengine",
+      "offer": "passwordmanagerpro-ee",
+      "sku": "pmp9100",
+      "version": "latest"
+    },*/
+
+    //   "OS-Custom Image":  "[parameters('VM_CustomImage_Settings')]",
+
+
+
+
+
+
+    "DomainJoinOption": 3,
+
+
+
+
+    // Dummy arrays are used in the case of a false deployment for data disks
+
+    "Dummy_Array_UnmanagedDisk": [
+      {
+        "name": "[concat(variables('VM_Name'), '-DataDisk-01')]",
+        "diskSizeGB": 2,
+        "lun": 0,
+        "caching": "None",
+        "createOption": "Attach",
+        "managedDisk": {
+          "id": "[resourceId('Microsoft.Compute/disks', concat(variables('VM_Name'),'-','DataDisk-01'))]"
+        }
+      }
+    ],
+
+    "Dummy_Array_ManagedDisk": [
+      {
+        "name": "[concat(variables('VM_Name'), '-DataDisk-01')]",
+        "diskSizeGB": "[parameters('VM_DataDiskSizeGB')]",
+        "lun": 0,
+        "caching": "None",
+        "createOption": "Attach",
+        "managedDisk": {
+          "id": "[resourceId('Microsoft.Compute/disks', concat(variables('VM_Name'),'-','DataDisk-01'))]"
+        }
+      }
+    ]
+
   },
   "resources": [
+
+    ///////////////// Load Balancers Templates  \\\\\\\\\\\\\\\\\\\
+
+
+    // Internal Load Balancer
+
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('storageAccountName')]",
-      "apiVersion": "2016-01-01",
-      "location": "[resourceGroup().location]",
-      "sku": {
-        "name": "Standard_LRS"
+      "condition": "[and(equals(parameters('VM_LoadBalanced'),'True'),equals(parameters('VM_LB_Type'),'Internal'))]",
+      "name": "VM_ILB_True",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_LB_ILB_True'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "Customer_ShortName": { "value": "[parameters('Customer_ShortName')]" },
+          "Environment_ShortName": { "value": "[parameters('Environment_ShortName')]" },
+          "Location_ShortName": { "value": "[parameters('Location_ShortName')]" },
+          "Functionality_ShortName": { "value": "[parameters('VM_Functionality_ShortName')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_Subnet_NSG_Name": { "value": "[variables('VM_Subnet_NSG_Name')]" },
+          "VNET_Subnet_FirstSecondThirdOctet": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "LoadBalancer_IP_Counter": { "value": "[parameters('VM_ILB_LoadBalancer_IP_Counter')]" },
+          "Include_LoadBalancingRules": { "value": "[parameters('VM_LB_Include_LoadBalancingRules')]" },
+          "LoadBalancingRules_EnableFloatingIP": { "value": "[parameters('VM_LB_LoadBalancingRules_EnableFloatingIP')]" },
+          "LoadBalancingRules_Names": { "value": "[parameters('VM_LB_LoadBalancingRules_Names')]" },
+          "LoadBalancingRules_Ports": { "value": "[parameters('VM_LB_LoadBalancingRules_Ports')]" },
+          "Include_InboundNAT_Rules": { "value": "[parameters('VM_LB_Include_InboundNAT_Rules')]" },
+          "InboundNAT_Rules_EnableFloatingIP": { "value": "[parameters('VM_LB_InboundNAT_Rules_EnableFloatingIP')]" },
+          "Inbound_NAT_Rules_Names": { "value": "[parameters('VM_LB_Inbound_NAT_Rules_Names')]" },
+          "InboundNAT_Rules_Backend_Port": { "value": "[parameters('VM_LB_InboundNAT_Rules_Backend_Port')]" },
+          "InboundNAT_Rules_Frontend_Ports": { "value": "[parameters('VM_LB_InboundNAT_Rules_Frontend_Ports')]" },
+          "Update_Subnet_NSG_Rules": { "value": "[if(equals(parameters('VNET_Name'),concat(parameters('Customer_ShortName'),'-',parameters('Environment_ShortName'),'-',parameters('Location_ShortName'),'-VNET')),parameters('VM_LB_Update_Subnet_NSG_Rules'),'False')]" },
+          "Subnet_NSG_Rules_Counter": { "value": "[parameters('VM_LB_Subnet_NSG_Rules_Counter')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+        }
+      }
+    },
+
+    // External Load Balancer
+
+    {
+      "condition": "[and(equals(parameters('VM_LoadBalanced'),'True'),equals(parameters('VM_LB_Type'),'External'))]",
+      "name": "VM_ELB_True",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_LB_ELB_True'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "Customer_ShortName": { "value": "[parameters('Customer_ShortName')]" },
+          "Environment_ShortName": { "value": "[parameters('Environment_ShortName')]" },
+          "Location_ShortName": { "value": "[parameters('Location_ShortName')]" },
+          "Functionality_ShortName": { "value": "[parameters('VM_Functionality_ShortName')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_Subnet_NSG_Name": { "value": "[variables('VM_Subnet_NSG_Name')]" },
+          "VNET_Subnet_FirstSecondThirdOctet": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "Include_LoadBalancingRules": { "value": "[parameters('VM_LB_Include_LoadBalancingRules')]" },
+          "LoadBalancingRules_EnableFloatingIP": { "value": "[parameters('VM_LB_LoadBalancingRules_EnableFloatingIP')]" },
+          "LoadBalancingRules_Names": { "value": "[parameters('VM_LB_LoadBalancingRules_Names')]" },
+          "LoadBalancingRules_Ports": { "value": "[parameters('VM_LB_LoadBalancingRules_Ports')]" },
+          "Include_InboundNAT_Rules": { "value": "[parameters('VM_LB_Include_InboundNAT_Rules')]" },
+          "InboundNAT_Rules_EnableFloatingIP": { "value": "[parameters('VM_LB_InboundNAT_Rules_EnableFloatingIP')]" },
+          "Inbound_NAT_Rules_Names": { "value": "[parameters('VM_LB_Inbound_NAT_Rules_Names')]" },
+          "InboundNAT_Rules_Backend_Port": { "value": "[parameters('VM_LB_InboundNAT_Rules_Backend_Port')]" },
+          "InboundNAT_Rules_Frontend_Ports": { "value": "[parameters('VM_LB_InboundNAT_Rules_Frontend_Ports')]" },
+          "Update_Subnet_NSG_Rules": { "value": "[if(equals(parameters('VNET_Name'),concat(parameters('Customer_ShortName'),'-',parameters('Environment_ShortName'),'-',parameters('Location_ShortName'),'-VNET')),parameters('VM_LB_Update_Subnet_NSG_Rules'),'False')]" },
+          "Subnet_NSG_Rules_Counter": { "value": "[parameters('VM_LB_Subnet_NSG_Rules_Counter')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+        }
+      }
+    },
+
+    // Application Gateway Template
+
+    {
+      "condition": "[and(equals(parameters('VM_LoadBalanced'),'True'),equals(parameters('VM_LB_Type'),'Application_Gateway'))]",
+      "name": "VM_AppGW",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_AppGW'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "Customer_ShortName": { "value": "[parameters('Customer_ShortName')]" },
+          "Environment_ShortName": { "value": "[parameters('Environment_ShortName')]" },
+          "VM_Functionality_ShortName": { "value": "[parameters('VM_Functionality_ShortName')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VM_AppGW_InstanceCount": { "value": "[parameters('VM_NumberOfInstances')]" },
+          "VM_AppGateway_Subnet_Name": { "value": "[parameters('VM_AppGateway_Subnet_Name')]" },
+          "VM_AppGateway_Size": { "value": "[parameters('VM_AppGateway_Size')]" },
+          "VM_AppGW_WAF_Mode": { "value": "[parameters('VM_AppGW_WAF_Mode')]" },
+          "VM_AppGW_WAF_RuleSet_Version": { "value": "[parameters('VM_AppGW_WAF_RuleSet_Version')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+        }
+      }
+    },
+
+    ///////////////// Network Interface Templates  \\\\\\\\\\\\\\\\\\\
+
+    {
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Backend'),equals(parameters('VM_LoadBalanced'),'False'))]",
+      "name": "[concat('VM_NIC_LB_False_PublicIP_False',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_False_PublicIP_False_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
       },
-      "kind": "Storage",
-      "properties": {}
-    },
-    {
-      "apiVersion": "2016-03-30",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('publicIPAddressName')]",
-      "location": "[resourceGroup().location]",
+      "dependsOn": [
+      ],
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+
         }
       }
     },
     {
-      "apiVersion": "2016-03-30",
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworkName')]",
-      "location": "[resourceGroup().location]",
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Backend'),equals(parameters('VM_LoadBalanced'),'False'))]",
+      "name": "[concat('VM_NIC_LB_False_PublicIP_False',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_False_PublicIP_False_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+      ],
       "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('addressPrefix')]"
-          ]
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
         },
-        "subnets": [
-          {
-            "name": "[variables('subnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('subnetPrefix')]"
-            }
-          }
-        ]
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+
+        }
       }
     },
     {
-      "apiVersion": "2016-03-30",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
-      "location": "[resourceGroup().location]",
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Backend'),equals(parameters('VM_LoadBalanced'),'False'))]",
+      "name": "[concat('VM_NIC_LB_False_PublicIP_False',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_False_PublicIP_False_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
-              },
-              "subnet": {
-                "id": "[variables('subnetRef')]"
-              }
-            }
-          }
-        ]
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+
+        }
       }
     },
     {
-      "apiVersion": "2017-03-30",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
-      "location": "[resourceGroup().location]",
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Backend'),equals(parameters('VM_LoadBalanced'),'True'))]",
+      "name": "[concat('VM_NIC_LB_True_PublicIP_False',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "name": "[concat('VM_NIC_LB_True_PublicIP_False',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_True_PublicIP_False_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[if(not(equals(parameters('VM_LB_Type'), 'Application_Gateway')),if(equals(parameters('VM_LB_Type'),'External'),resourceId('Microsoft.Resources/deployments','VM_ELB_True'),resourceId('Microsoft.Resources/deployments','VM_ILB_True')),resourceId('Microsoft.Resources/deployments','VM_AppGW'))]"
       ],
       "properties": {
-        "hardwareProfile": {
-          "vmSize": "Standard_A2"
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
         },
-        "osProfile": {
-          "computerName": "[variables('vmName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "NIC_LB_BackendAddressPool_ID": { "value": "[concat(resourceId('Microsoft.Network/loadBalancers',if(equals(parameters('VM_LB_Type'),'External'),variables('LB_External'),variables('LB_Internal'))),'/backendAddressPools/',if(equals(parameters('VM_LB_Type'),'External'),variables('LB_External_Pool'),variables('LB_Internal_Pool')))]" },
+          "NIC_AppGW_BackendAddressPool_ID": { "value": "[concat(resourceId('Microsoft.Network/applicationGateways/',     variables('App_GW')),'/backendAddressPools/',variables('App_GW_Pool'))]" },
+          "VM_LB_Type": { "value": "[parameters('VM_LB_Type')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" }
+
+        }
+      }
+    },
+    {
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Frontend'),equals(parameters('VM_LoadBalanced'),'False'))]",
+      "name": "[concat('VM_NIC_LB_False_PublicIP_True',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_False_PublicIP_True_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
         },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "[parameters('windowsOSVersion')]",
-            "version": "latest"
-          },
-          "osDisk": {
-            "createOption": "FromImage"
-          },
-          "dataDisks": [
-            {
-              "diskSizeGB": 1023,
-              "lun": 0,
-              "createOption": "Empty"
-            }
-          ]
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "PublicIP_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-PublicIP-01')]" },
+          "PublicIP_DNS_Name": { "value": "[replace(tolower(concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))),'-','')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" }
+        }
+      }
+    },
+    {
+      "condition": "[and(equals(parameters('VM_NIC_Type'),'Frontend'),equals(parameters('VM_LoadBalanced'),'True'))]",
+      "name": "[concat('VM_NIC_LB_True_PublicIP_True',copyIndex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_NIC_LB_True_PublicIP_True_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+        "[if(not(equals(parameters('VM_LB_Type'), 'Application_Gateway')),if(equals(parameters('VM_LB_Type'),'External'),resourceId('Microsoft.Resources/deployments','VM_ELB_True'),resourceId('Microsoft.Resources/deployments','VM_ILB_True')),resourceId('Microsoft.Resources/deployments','VM_AppGW'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables(concat('Template_VM_NIC_',parameters('VM_NIC_Type'),'_JSON')), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
         },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
-            }
-          ]
+        "parameters": {
+          "NIC_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-','NIC-01')]" },
+          "PublicIP_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')),'-PublicIP-01')]" },
+          "PublicIP_DNS_Name": { "value": "[replace(tolower(concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))),'-','')]" },
+          "VNET_Name": { "value": "[parameters('VNET_Name')]" },
+          "VNET_Subnet_Name": { "value": "[variables('VM_Subnet_Name')]" },
+          "VNET_ResourceGroupName": { "value": "[parameters('VNET_ResourceGroupName')]" },
+          "VNET_Subnet_FirstSecondThirdOctet_IPAddress": { "value": "[variables('VM_Subnet_FirstSecondThirdOctet_IPAddress')]" },
+          "VNET_FourthOctet_IPAddress_Counter": { "value": "[add(parameters('VM_NIC_IPAddress_Counter'),copyIndex(0))]" },
+          "NIC_AttachedTo_LoadBalancer": { "value": "[parameters('VM_LoadBalanced')]" },
+          "NIC_LB_BackendAddressPool_ID": { "value": "[concat(resourceId('Microsoft.Network/loadBalancers',if(equals(parameters('VM_LB_Type'),'External'),variables('LB_External'),variables('LB_Internal'))),'/backendAddressPools/',if(equals(parameters('VM_LB_Type'),'External'),variables('LB_External_Pool'),variables('LB_Internal_Pool')))]" },
+          "NIC_AppGW_BackendAddressPool_ID": { "value": "[concat(resourceId('Microsoft.Network/applicationGateways/',     variables('App_GW')),'/backendAddressPools/',variables('App_GW_Pool'))]" },
+          "VM_LB_Type": { "value": "[parameters('VM_LB_Type')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" },
+          "NIC_IPAddress_AllocationMethod": { "value": "[parameters('VM_NIC_IPAddress_Allocation_Method')]" },
+          "NIC_With_CustomDNS": { "value": "[parameters('VM_NIC_With_CustomDNS')]" },
+          "NIC_DNS_IP": { "value": "[parameters('VM_NIC_DNS_IP')]" }
+        }
+      }
+    },
+
+    ///////////////// Availability Set Template  \\\\\\\\\\\\\\\\\\\
+
+    {
+      "condition": "[equals(parameters('VM_WithAvailablitySet'),'True')]",
+      "name": "[concat('VM_AS-',parameters('VM_Functionality_ShortName'))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_AS_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
         },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
-          }
+        "parameters": {
+          "AS_Name": { "value": "[concat(variables('VM_Name'),'-AS')]" },
+          "AS_VM_Disk_Type": { "value": "[parameters('VM_DisksType')]" }
+        }
+      }
+    },
+
+    ///////////////// Storage Account Template  \\\\\\\\\\\\\\\\\\\
+
+    // Diagnostics Storage Account Template
+
+    {
+      "condition": "[equals(parameters('VM_Diagnostics_Enabled'),'True')]",
+      "name": "[variables('VM_Diag_StorageAccount_Name')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Storage_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "StorageAccount_Name": { "value": "[variables('VM_Diag_StorageAccount_Name')]" },
+          "StorageAccount_Type": { "value": "Standard_LRS" }
+        }
+      }
+    },
+
+    // Standard Storage Account Template
+
+    {
+      "condition": "[if(and(equals(parameters('VM_DisksType'),'UnmanagedDisk'),or(and(not(equals(parameters('VM_OperatingSystem'),'Custom Image')),equals(parameters('VM_OSDisk_Type'),'Standard')),and(equals(parameters('VM_Include_DataDisks'),'True'),equals(parameters('VM_DataDisk_Type'),'Standard')))),json('true'),json('false'))]",
+      "name": "[variables('VM_Std_StorageAccount_Name')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Storage_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "StorageAccount_Name": { "value": "[variables('VM_Std_StorageAccount_Name')]" },
+          "StorageAccount_Type": { "value": "Standard_LRS" }
+        }
+      }
+    },
+
+    // Premium Storage Account Template
+
+    {
+      "condition": "[if(and(equals(parameters('VM_DisksType'),'UnmanagedDisk'),or(and(not(equals(parameters('VM_OperatingSystem'),'Custom Image')),equals(parameters('VM_OSDisk_Type'),'Premium')),and(equals(parameters('VM_Include_DataDisks'),'True'),equals(parameters('VM_DataDisk_Type'),'Premium')))),json('true'),json('false'))]",
+      "name": "[variables('VM_Prm_StorageAccount_Name')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Storage_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "StorageAccount_Name": { "value": "[variables('VM_Prm_StorageAccount_Name')]" },
+          "StorageAccount_Type": { "value": "Premium_LRS" }
+        }
+      }
+    },
+
+
+    // Unmanaged Disk (Data Disk Array)
+
+    {
+      "condition": "[equals(parameters('VM_DisksType'),'UnmanagedDisk')]",
+      "name": "[concat('VM-UnmanagedDisk_DataDisks_Array-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "[concat('VM-UnmanagedDisk_DataDisks_Array-',parameters('VM_Functionality_ShortName'))]",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_UnmanagedDisk_DataDisk_Array_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" },
+          "VM_DataDisk_StorageAccount_Name": { "value": "[if(equals(parameters('VM_DataDisk_Type'),'Standard'),variables('VM_Std_StorageAccount_Name'),variables('VM_Prm_StorageAccount_Name'))]" },
+          "VM_NumberOfDataDisks": { "value": "[parameters('VM_NumberOfDataDisks')]" },
+          "VM_DataDiskSizeGB": { "value": "[parameters('VM_DataDiskSizeGB')]" },
+          "VM_DataDisk_Caching": { "value": "None" }
+        }
+      }
+    },
+
+    // Managed Disk (Data Disk Array)
+
+    {
+      "condition": "[equals(parameters('VM_DisksType'),'ManagedDisk')]",
+      "name": "[concat('VM-ManagedDisk_DataDisks_Array-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "[concat('VM-ManagedDisk_DataDisks_Array-',parameters('VM_Functionality_ShortName'))]",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('VM-Managed_DataDisks-',parameters('VM_InstancesStartingCounter'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_ManagedDisk_DataDisk_Array_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" },
+          "VM_NumberOfDataDisks": { "value": "[parameters('VM_NumberOfDataDisks')]" },
+          "VM_DataDiskSizeGB": { "value": "[parameters('VM_DataDiskSizeGB')]" },
+          "VM_DataDisk_Caching": { "value": "None" }
+        }
+      }
+    },
+
+    ///////////////// Managed Data Disks Template  \\\\\\\\\\\\\\\\\\\
+
+    {
+      "condition": "[and(equals(parameters('VM_DisksType'),'ManagedDisk'), equals(parameters('VM_Include_DataDisks'),'True'))]",
+      "name": "[concat('VM-Managed_DataDisks-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "[concat('VM-Managed_DataDisks-',parameters('VM_Functionality_ShortName'))]",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_ManagedDisk_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "DataDisk_Name": { "value": "[concat(variables('VM_Name'),'-0',copyindex(parameters('VM_InstancesStartingCounter')),'-','DataDisk-0')]" },
+          "DataDisk_Account_Type": { "value": "[parameters('VM_DataDisk_Type')]" },
+          "DataDisk_DiskSizeGB": { "value": "[parameters('VM_DataDiskSizeGB')]" },
+          "NumberOf_DataDisks": { "value": "[parameters('VM_NumberOfDataDisks')]" }
+        }
+      }
+    },
+
+
+    ////// Virtual Machines Templates
+
+    {
+      "condition": "[equals(parameters('VM_With_Plan'),'False')]",
+      "name": "[concat('VM-',parameters('VM_Functionality_ShortName'),'-plan',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments',concat('VM_AS-',parameters('VM_Functionality_ShortName')))]",
+        "[concat('VM_NIC_LB_',parameters('VM_LoadBalanced'),'_PublicIP_',variables('VM_NIC_Frontend'),'_Counter')]",
+        "[resourceId('Microsoft.Resources/deployments',variables('VM_Diag_StorageAccount_Name'))]",
+        "[if(equals(parameters('VM_OSDisk_Type'),'Standard'),resourceId('Microsoft.Resources/deployments',variables('VM_Std_StorageAccount_Name')),resourceId('Microsoft.Resources/deployments',variables('VM_Prm_StorageAccount_Name')))]",
+        "[concat('VM-',parameters('VM_DisksType'),'_DataDisks_Array-',parameters('VM_InstancesStartingCounter'))]"
+      ],
+      "copy": {
+        "name": "VM-Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/',variables('Template_VM_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" },
+          "VM_OS_Type": { "value": "[parameters('VM_OS_Type')]" },
+          "VM_OperatingSystem": { "value": "[parameters('VM_OperatingSystem')]" },
+          "VM_OS_Windows_License": { "value": "[parameters('VM_OS_Windows_License')]" },
+          "VM_Size": { "value": "[parameters('VM_Size')]" },
+          "VM_AdminUsername": { "value": "[parameters('VM_AdminUsername')]" },
+          "VM_AdminPassword": { "value": "[parameters('VM_AdminPassword')]" },
+          "VM_WithAvailablitySet": { "value": "[parameters('VM_WithAvailablitySet')]" },
+          "VM_AvailabilitySet_Name": { "value": "[concat(variables('VM_Name'),'-AS')]" },
+          "VM_DisksType": { "value": "[parameters('VM_DisksType')]" },
+          "VM_OSDisk_Type": { "value": "[parameters('VM_OSDisk_Type')]" },
+          "VM_UnmanagedDisk_OSDisk_StorageAccount_Name": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'),if(equals(parameters('VM_OSDisk_Type'),'Standard'),variables('VM_Std_StorageAccount_Name'),variables('VM_Prm_StorageAccount_Name')))]" },
+          "VM_Include_DataDisks": { "value": "[parameters('VM_Include_DataDisks')]" },
+          "VM_DataDisk_Type": { "value": "[parameters('VM_DataDisk_Type')]" },
+          "VM_UnmanagedDisk_DataDisk_StorageAccount_Name": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'),if(equals(parameters('VM_DataDisk_Type'),'Standard'),variables('VM_Std_StorageAccount_Name'),variables('VM_Prm_StorageAccount_Name')))]" },
+          "VM_DataDisk_Array": { "value": "[if(equals(parameters('VM_Include_DataDisks'),'True'),reference(concat('VM-',parameters('VM_DisksType'),'_DataDisks_Array-',copyindex(parameters('VM_InstancesStartingCounter'))),'2017-05-10').outputs.DataDisk_Array.value,variables(concat('Dummy_Array_',parameters('VM_DisksType'))))]" },
+          "VM_Diagnostics_Enabled": { "value": "[parameters('VM_Diagnostics_Enabled')]" },
+          "VM_AzureImage_ImageReference": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),variables('OS-Windows Server 2012 R2'),variables(concat('OS-',parameters('VM_OperatingSystem'))))]" },
+          "VM_Diag_StorageAccount_Name": { "value": "[variables('VM_Diag_StorageAccount_Name')]" },
+          "VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name')]" },
+          "VM_CustomImage_UnmanagedDisk_Source_Container_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_Container_Name')]" },
+          "VM_CustomImage_UnmanagedDisk_Source_Image_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_Image_Name')]" },
+          "VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name": { "value": "[parameters('VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name')]" },
+          "VM_CustomImage_ManagedDisk_Source_Image_Name": { "value": "[parameters('VM_CustomImage_ManagedDisk_Source_Image_Name')]" },
+          "VM_Dual_NICs": { "value": "False" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+
+        }
+      }
+    },
+
+    {
+      "condition": "[equals(parameters('VM_With_Plan'),'True')]",
+      "name": "[concat('VM-',parameters('VM_Functionality_ShortName'),copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments',concat('VM_AS-',parameters('VM_Functionality_ShortName')))]",
+        "[concat('VM_NIC_LB_',parameters('VM_LoadBalanced'),'_PublicIP_',variables('VM_NIC_Frontend'),'_Counter')]",
+        "[resourceId('Microsoft.Resources/deployments',variables('VM_Diag_StorageAccount_Name'))]",
+        "[if(equals(parameters('VM_OSDisk_Type'),'Standard'),resourceId('Microsoft.Resources/deployments',variables('VM_Std_StorageAccount_Name')),resourceId('Microsoft.Resources/deployments',variables('VM_Prm_StorageAccount_Name')))]",
+        "[concat('VM-',parameters('VM_DisksType'),'_DataDisks_Array-',parameters('VM_InstancesStartingCounter'))]"
+      ],
+      "copy": {
+        "name": "VM-Counter_Plan",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/',variables('Template_VM_With_Plan_JSON'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" },
+          "VM_OS_Type": { "value": "[parameters('VM_OS_Type')]" },
+          "VM_OperatingSystem": { "value": "[parameters('VM_Plan_OS')]" },
+          "VM_OS_Windows_License": { "value": "[parameters('VM_OS_Windows_License')]" },
+          "VM_Size": { "value": "[parameters('VM_Size')]" },
+          "VM_AdminUsername": { "value": "[parameters('VM_AdminUsername')]" },
+          "VM_AdminPassword": { "value": "[parameters('VM_AdminPassword')]" },
+          "VM_WithAvailablitySet": { "value": "[parameters('VM_WithAvailablitySet')]" },
+          "VM_AvailabilitySet_Name": { "value": "[concat(variables('VM_Name'),'-AS')]" },
+          "VM_DisksType": { "value": "[parameters('VM_DisksType')]" },
+          "VM_OSDisk_Type": { "value": "[parameters('VM_OSDisk_Type')]" },
+          "VM_UnmanagedDisk_OSDisk_StorageAccount_Name": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'),if(equals(parameters('VM_OSDisk_Type'),'Standard'),variables('VM_Std_StorageAccount_Name'),variables('VM_Prm_StorageAccount_Name')))]" },
+          "VM_Include_DataDisks": { "value": "[parameters('VM_Include_DataDisks')]" },
+          "VM_DataDisk_Type": { "value": "[parameters('VM_DataDisk_Type')]" },
+          "VM_UnmanagedDisk_DataDisk_StorageAccount_Name": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name'),if(equals(parameters('VM_DataDisk_Type'),'Standard'),variables('VM_Std_StorageAccount_Name'),variables('VM_Prm_StorageAccount_Name')))]" },
+          "VM_DataDisk_Array": { "value": "[if(equals(parameters('VM_Include_DataDisks'),'True'),reference(concat('VM-',parameters('VM_DisksType'),'_DataDisks_Array-',copyindex(parameters('VM_InstancesStartingCounter'))),'2017-05-10').outputs.DataDisk_Array.value,variables(concat('Dummy_Array_',parameters('VM_DisksType'))))]" },
+          "VM_Diagnostics_Enabled": { "value": "[parameters('VM_Diagnostics_Enabled')]" },
+          "VM_Diag_StorageAccount_Name": { "value": "[variables('VM_Diag_StorageAccount_Name')]" },
+          "VM_AzureImage_ImageReference": { "value": "[if(equals(parameters('VM_OperatingSystem'),'Custom Image'),variables('OS-Windows Server 2012 R2'),parameters('VM_CustomImage_Settings'))]" },
+          "VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_StorageAccount_Name')]" },
+          "VM_CustomImage_UnmanagedDisk_Source_Container_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_Container_Name')]" },
+          "VM_CustomImage_UnmanagedDisk_Source_Image_Name": { "value": "[parameters('VM_CustomImage_UnmanagedDisk_Source_Image_Name')]" },
+          "VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name": { "value": "[parameters('VM_CustomImage_ManagedDisk_Source_ResourceGroup_Name')]" },
+          "VM_CustomImage_ManagedDisk_Source_Image_Name": { "value": "[parameters('VM_CustomImage_ManagedDisk_Source_Image_Name')]" },
+          "VM_Dual_NICs": { "value": "False" },
+          "VM_With_Plan": { "value": "[parameters('VM_With_Plan')]" },
+          "VM_Plan": { "value": "[parameters('VM_Plan')]" },
+          "Deployment_SAS_Token": { "value": "[parameters('Deployment_SAS_Token')]" }
+
+        }
+      }
+    },
+
+
+    ////// VM Extensions \\\\\\
+
+    {
+      "condition": "[and(equals(parameters('VM_OS_Type'),'Windows'),equals(parameters('VM_Windows_BG_Extension'),'True'))]",
+      "name": "[concat('VM_Windows_BG_Extension-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_Windows_BG_Extension",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('VM-',parameters('VM_Functionality_ShortName'),copyindex(parameters('VM_InstancesStartingCounter')))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Windows_BG_Extension'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" }
+        }
+      }
+    },
+    {
+      "condition": "[and(equals(parameters('VM_OS_Type'),'Windows'),equals(parameters('VM_Windows_Antimalware_Extension'),'True'))]",
+      "name": "[concat('VM_Windows_Antimalware_Extension-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_Windows_Antimalware_Extension_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('VM-',parameters('VM_Functionality_ShortName'),copyindex(parameters('VM_InstancesStartingCounter')))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Windows_Antimalware_Extension'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" }
+        }
+      }
+    },
+    {
+      "condition": "[and(equals(parameters('VM_OS_Type'),'Windows'),equals(parameters('VM_Windows_JoinToExistingDomain_Extension'),'True'))]",
+      "name": "[concat('VM_Windows_JoinToExistingDomain_Extension-',copyindex(parameters('VM_InstancesStartingCounter')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "copy": {
+        "name": "VM_Windows_JoinToExistingDomain_Extension_Counter",
+        "count": "[parameters('VM_NumberOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('VM-',parameters('VM_Functionality_ShortName'),copyindex(parameters('VM_InstancesStartingCounter')))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('Templates_StorageAccount'), '/', variables('Templates_StorageContainer'), '/', variables('Template_VM_Windows_JoinToExistingDomain_Extension'), parameters('Deployment_SAS_Token'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "VM_Name": { "value": "[concat(variables('VM_Name'),'-0',copyIndex(parameters('VM_InstancesStartingCounter')))]" },
+          "VM_DomainJoin_DomainName": { "value": "[parameters('VM_DomainJoin_DomainName')]" },
+          "VM_DomainJoin_OU_Path": { "value": "[parameters('VM_DomainJoin_OU_Path')]" },
+          "VM_DomainJoin_Options": { "value": "[variables('DomainJoinOption')]" },
+          "VM_DomainJoin_DomainAdmin_UserName": { "value": "[parameters('VM_DomainJoin_DomainAdmin_UserName')]" },
+          "VM_DomainJoin_DomainAdmin_Password": { "value": "[parameters('VM_DomainJoin_DomainAdmin_Password')]" }
         }
       }
     }
+
   ],
-  "outputs": {
-    "hostname": {
-      "type": "string",
-      "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+    "outputs": {
     }
+
+
   }
-}
+

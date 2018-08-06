@@ -131,8 +131,8 @@
   },
   "variables": {
     // Templates Locations
-    "Templates_StorageAccount": "https://std3f88152.blob.core.windows.net",
-    "Templates_StorageContainer": "templates/VM/nestedtemplates",
+    "Templates_StorageAccount": "https://rndsharedfiles.blob.core.windows.net",
+    "Templates_StorageContainer": "ebecsdev2templates",
     "Template_NIC_PublicIP_JSON": "PublicIP.json",
     "Template_NIC_Frontend_CustomDNS": "VM_NIC_Frontend_CustomDNS.json",
 
